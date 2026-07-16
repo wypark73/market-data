@@ -1,0 +1,90 @@
+{
+  "schema_version": 1,
+  "updated_at": "2026-07-16T14:14:46.980575+09:00",
+  "run_slot": "manual",
+  "data_freshness": {
+    "data_json_updated_at": "2026-07-16T14:14:35.766749+09:00",
+    "kospi200_last_date": "2026-07-16",
+    "sp500_last_date": "2026-07-15",
+    "hy_oas_last_date": "2026-07-14",
+    "stale": false,
+    "intraday_risk": true
+  },
+  "mode": {
+    "current": "중도",
+    "since": null,
+    "since_note": "특정 불가 — 2026-07-16 사용자 확인: 중도로 오래 전부터 운영, 시점 불명. 판정에는 미사용(창 날짜만 사용).",
+    "next_window": "2026-10-31",
+    "would_be_if_window_today": "중도",
+    "axis1_inflation": "低",
+    "axis2_credit": "안정",
+    "promotion_gate_pass": false
+  },
+  "munger": {
+    "stage": 1,
+    "overweight_pp": 1.5,
+    "history": [
+      {
+        "stage": 1,
+        "date": "2026-07-08",
+        "close": 1158.37,
+        "dd_pct": -21.58,
+        "note": "고정 델타 실행 완료: KOSPI200 +1.5%p / 한국채·미국채 각 -0.75%p"
+      }
+    ],
+    "next_trigger": {
+      "stage": 2,
+      "level": 960.19,
+      "dd_pct": -35.0
+    },
+    "dist_to_next_pp": 7.89,
+    "buy_gate_open": true
+  },
+  "inflation": {
+    "series": "CPIAUCNS",
+    "method": "date-aligned 12M (no positional shift)",
+    "count": 0,
+    "last_month": "2026-06",
+    "last_value": 3.53,
+    "reset_reason": "2026-06 = 3.53 < 4.0",
+    "missing_index_months": [
+      "2025-10"
+    ]
+  },
+  "gate": {
+    "status": "open",
+    "usdkrw": 1482.35,
+    "usdkrw_leg": false,
+    "cds_leg": false,
+    "cds_check_required": false,
+    "cds_note": "환율 레그 미충족 시 CDS는 판정에 영향 없음 (AND 조건)"
+  },
+  "ath": {
+    "kospi200": {
+      "value": 1477.22,
+      "source": "override",
+      "stale": false
+    },
+    "sp500": {
+      "value": 7609.78,
+      "source": "series_max",
+      "stale": false
+    }
+  },
+  "alerts_fired": {
+    "MUNGER_TRIGGER": null,
+    "MUNGER_NEAR": null,
+    "GATE_CDS_CHECK": null,
+    "CPI_SERIES_MISMATCH": null,
+    "DATA_STALE": null,
+    "WINDOW_D30": null,
+    "USDKRW_WARN": "2026-07-16",
+    "HY_OAS_WARN": null,
+    "CPI_NEAR": null,
+    "ATH_STALE": null,
+    "MODE_DRIFT": null,
+    "INFL_COUNT_CHANGE": null,
+    "HEARTBEAT": null
+  },
+  "pending_ack": []
+}
