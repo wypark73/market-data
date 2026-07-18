@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-07-18T07:26:39.693076+09:00",
+  "updated_at": "2026-07-18T17:26:04.401618+09:00",
   "note": "트리거 발동/미발동 판정은 조회 측에서 수행. 본 파일은 숫자만 제공. DD가 트리거 ±3%p 이내로 근접하면 KRX/HTS 교차확인 규칙 유지.",
   "labels": {
     "360750": "미국 S&P500 ETF",
@@ -1100,22 +1100,22 @@
     "gold_usd": {
       "ok": true,
       "last_date": "2026-07-17",
-      "last": 4023.0,
+      "last": 4012.7,
       "ath": 5318.4,
       "ath_date": "2026-01-29",
       "ath_source": "series_max",
       "ath_stale": false,
       "ath_breach": null,
-      "dd_pct": -24.36,
+      "dd_pct": -24.55,
       "munger_levels": {
         "-20%": 4254.72,
         "-35%": 3456.96,
         "-50%": 2659.2
       },
-      "dist_to_minus20_pct": 5.76,
-      "close_5d_avg": 4022.14,
-      "dd_5d_avg_pct": -24.37,
-      "ma50": 4318.16,
+      "dist_to_minus20_pct": 6.03,
+      "close_5d_avg": 4020.08,
+      "dd_5d_avg_pct": -24.41,
+      "ma50": 4317.95,
       "dates": [
         "2025-07-07",
         "2025-07-08",
@@ -1638,7 +1638,7 @@
         4061.1,
         4044.0,
         3985.6,
-        4023.0
+        4012.7
       ]
     }
   },
@@ -2586,23 +2586,23 @@
   "krx_openapi": {
     "kospi200": {
       "ok": true,
-      "basDd": "20260715",
-      "last": 1163.9,
-      "chg": 71.67,
-      "chg_pct": 6.56,
+      "basDd": "20260716",
+      "last": 1080.36,
+      "chg": -83.54,
+      "chg_pct": -7.18,
       "raw": {
-        "BAS_DD": "20260715",
+        "BAS_DD": "20260716",
         "IDX_CLSS": "KOSPI",
         "IDX_NM": "코스피 200",
-        "CLSPRC_IDX": "1163.90",
-        "CMPPREVDD_IDX": "71.67",
-        "FLUC_RT": "6.56",
-        "OPNPRC_IDX": "1129.73",
-        "HGPRC_IDX": "1189.29",
-        "LWPRC_IDX": "1129.41",
-        "ACC_TRDVOL": "139775971",
-        "ACC_TRDVAL": "31369125708233",
-        "MKTCAP": "5569304263348940"
+        "CLSPRC_IDX": "1080.36",
+        "CMPPREVDD_IDX": "-83.54",
+        "FLUC_RT": "-7.18",
+        "OPNPRC_IDX": "1106.26",
+        "HGPRC_IDX": "1111.32",
+        "LWPRC_IDX": "1067.14",
+        "ACC_TRDVOL": "127385424",
+        "ACC_TRDVAL": "26930325368910",
+        "MKTCAP": "5204404364584180"
       }
     }
   },
