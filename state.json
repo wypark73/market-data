@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-07-18T17:26:15.822406+09:00",
+  "updated_at": "2026-07-20T18:44:28.243657+09:00",
   "run_slot": "A",
   "data_freshness": {
-    "data_json_updated_at": "2026-07-18T17:26:04.401618+09:00",
-    "kospi200_last_date": "2026-07-16",
+    "data_json_updated_at": "2026-07-20T18:44:14.541076+09:00",
+    "kospi200_last_date": "2026-07-20",
     "sp500_last_date": "2026-07-17",
     "hy_oas_last_date": "2026-07-16",
     "stale": false,
@@ -37,7 +37,7 @@
       "level": 960.19,
       "dd_pct": -35.0
     },
-    "dist_to_next_pp": 8.13,
+    "dist_to_next_pp": 4.9,
     "buy_gate_open": true
   },
   "inflation": {
@@ -53,7 +53,7 @@
   },
   "gate": {
     "status": "open",
-    "usdkrw": 1487.46,
+    "usdkrw": 1481.76,
     "usdkrw_leg": false,
     "cds_leg": false,
     "cds_check_required": false,
@@ -73,10 +73,10 @@
   },
   "last_seen": {
     "kospi200": {
-      "date": "2026-07-16",
-      "close": 1080.36,
+      "date": "2026-07-20",
+      "close": 1032.52,
       "intraday_risk": false,
-      "observed_at": "2026-07-18T17:26:15.822406+09:00",
+      "observed_at": "2026-07-20T18:44:28.243657+09:00",
       "run_slot": "A"
     }
   },
@@ -87,13 +87,13 @@
     "CPI_SERIES_MISMATCH": null,
     "DATA_STALE": null,
     "WINDOW_D30": null,
-    "USDKRW_WARN": "2026-07-18",
+    "USDKRW_WARN": "2026-07-20",
     "HY_OAS_WARN": null,
     "CPI_NEAR": null,
     "ATH_STALE": null,
     "MODE_DRIFT": null,
     "INFL_COUNT_CHANGE": null,
-    "HEARTBEAT": null
+    "HEARTBEAT": "2026-07-20"
   },
   "pending_ack": []
 }
