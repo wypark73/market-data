@@ -1,12 +1,12 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-07-20T18:44:28.243657+09:00",
-  "run_slot": "A",
+  "updated_at": "2026-07-21T07:33:01.154121+09:00",
+  "run_slot": "B",
   "data_freshness": {
-    "data_json_updated_at": "2026-07-20T18:44:14.541076+09:00",
+    "data_json_updated_at": "2026-07-21T07:32:38.803558+09:00",
     "kospi200_last_date": "2026-07-20",
-    "sp500_last_date": "2026-07-17",
-    "hy_oas_last_date": "2026-07-16",
+    "sp500_last_date": "2026-07-20",
+    "hy_oas_last_date": "2026-07-17",
     "stale": false,
     "intraday_risk": false
   },
@@ -53,7 +53,7 @@
   },
   "gate": {
     "status": "open",
-    "usdkrw": 1481.76,
+    "usdkrw": 1475.3101,
     "usdkrw_leg": false,
     "cds_leg": false,
     "cds_check_required": false,
@@ -76,8 +76,8 @@
       "date": "2026-07-20",
       "close": 1032.52,
       "intraday_risk": false,
-      "observed_at": "2026-07-20T18:44:28.243657+09:00",
-      "run_slot": "A"
+      "observed_at": "2026-07-21T07:33:01.154121+09:00",
+      "run_slot": "B"
     }
   },
   "alerts_fired": {
@@ -87,13 +87,13 @@
     "CPI_SERIES_MISMATCH": null,
     "DATA_STALE": null,
     "WINDOW_D30": null,
-    "USDKRW_WARN": "2026-07-20",
+    "USDKRW_WARN": "2026-07-21",
     "HY_OAS_WARN": null,
     "CPI_NEAR": null,
     "ATH_STALE": null,
     "MODE_DRIFT": null,
     "INFL_COUNT_CHANGE": null,
-    "HEARTBEAT": "2026-07-20"
+    "HEARTBEAT": null
   },
   "pending_ack": []
 }
