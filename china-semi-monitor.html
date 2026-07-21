@@ -1,0 +1,414 @@
+<!--
+  차이나 반도체 모니터 — TIGER 차이나반도체FACTSET(396520) 상위 보유종목
+  중국 A주 실시간 시세를 Eastmoney 공개 엔드포인트로 자동 연동 시도(JSON→JSONP),
+  실패 시 종목별 수동 입력으로 대체.
+-->
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<style>
+  :root {
+    --bg:        #EBEDF1;
+    --panel:     #FFFFFF;
+    --panel-2:   #F6F7F9;
+    --ink:       #171A21;
+    --ink-soft:  #4A515C;
+    --muted:     #838B97;
+    --line:      #E0E3E8;
+    --line-2:    #EDEFF2;
+    --accent:    #38445E;   /* 웨이퍼 슬레이트 */
+    --accent-dim:#6C7890;
+    --up:        #E23B33;   /* 红涨 — 중국식 상승 */
+    --up-bg:     #FBEBEA;
+    --down:      #16A45C;   /* 绿跌 — 중국식 하락 */
+    --down-bg:   #E7F5EE;
+    --warn:      #B4791E;
+    --warn-bg:   #FBF2E0;
+    --radius:    14px;
+    --mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+    --sans: "Pretendard", -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo",
+            "Malgun Gothic", system-ui, sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--sans);
+    -webkit-font-smoothing: antialiased;
+    line-height: 1.45;
+  }
+  .wrap { max-width: 940px; margin: 0 auto; padding: 22px 16px 60px; }
+
+  /* ---------- header ---------- */
+  header {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+    margin-bottom: 14px;
+  }
+  .h-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; flex-wrap: wrap; }
+  .brand .eyebrow {
+    font-size: 11px; letter-spacing: .16em; text-transform: uppercase;
+    color: var(--accent-dim); font-weight: 700; margin: 0 0 4px;
+  }
+  .brand h1 { font-size: 20px; margin: 0; font-weight: 800; letter-spacing: -.01em; }
+  .brand .sub { font-size: 12.5px; color: var(--muted); margin-top: 3px; font-family: var(--mono); }
+
+  .controls { display: flex; align-items: center; gap: 8px; }
+  button.action {
+    font-family: var(--sans); font-size: 13px; font-weight: 700;
+    border: 1px solid var(--line); background: var(--panel-2); color: var(--ink);
+    padding: 8px 13px; border-radius: 9px; cursor: pointer; transition: .12s;
+  }
+  button.action:hover { background: #EEF0F4; }
+  button.action.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+  button.action.primary:hover { background: #2C384F; }
+  button.action:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  .auto-toggle { display: flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--ink-soft); user-select: none; cursor: pointer; }
+  .auto-toggle input { accent-color: var(--accent); width: 15px; height: 15px; }
+
+  /* ---------- status strip ---------- */
+  .strip {
+    display: flex; align-items: stretch; gap: 1px; margin-top: 16px;
+    background: var(--line); border: 1px solid var(--line); border-radius: 11px; overflow: hidden;
+  }
+  .cell { background: var(--panel); padding: 11px 14px; flex: 1; min-width: 0; }
+  .cell .k { font-size: 10.5px; letter-spacing: .05em; color: var(--muted); text-transform: uppercase; font-weight: 700; }
+  .cell .v { font-size: 18px; font-weight: 800; font-family: var(--mono); margin-top: 3px; font-variant-numeric: tabular-nums; }
+  .cell .v.small { font-size: 13px; font-weight: 600; }
+  .cell.hero { flex: 1.3; }
+
+  .livepill {
+    display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; font-weight: 700;
+    padding: 4px 9px; border-radius: 20px; font-family: var(--sans);
+  }
+  .livepill .dot { width: 7px; height: 7px; border-radius: 50%; }
+  .livepill.on  { background: var(--down-bg); color: var(--down); }
+  .livepill.on .dot  { background: var(--down); animation: pulse 1.6s infinite; }
+  .livepill.off { background: var(--warn-bg); color: var(--warn); }
+  .livepill.off .dot { background: var(--warn); }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.35} }
+
+  /* ---------- table ---------- */
+  .board {
+    background: var(--panel); border: 1px solid var(--line);
+    border-radius: var(--radius); overflow: hidden;
+  }
+  table { width: 100%; border-collapse: collapse; }
+  thead th {
+    font-size: 10.5px; letter-spacing: .05em; text-transform: uppercase; color: var(--muted);
+    font-weight: 700; text-align: right; padding: 12px 14px; background: var(--panel-2);
+    border-bottom: 1px solid var(--line); white-space: nowrap;
+  }
+  thead th.l { text-align: left; }
+  tbody td { padding: 13px 14px; border-bottom: 1px solid var(--line-2); text-align: right; font-variant-numeric: tabular-nums; }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover { background: #FAFBFC; }
+
+  .rank { font-family: var(--mono); font-size: 12px; color: var(--accent-dim); font-weight: 700; text-align: left; width: 26px; }
+  .name-cell { text-align: left; }
+  .name-kr { font-weight: 700; font-size: 14px; }
+  .name-cn { font-size: 11.5px; color: var(--muted); margin-top: 1px; }
+  .code { font-family: var(--mono); font-size: 12px; color: var(--ink-soft); text-align: left; }
+  .tag {
+    display: inline-block; font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 5px;
+    background: var(--panel-2); color: var(--accent-dim); border: 1px solid var(--line); margin-top: 3px;
+  }
+  .weight { font-family: var(--mono); font-size: 13px; color: var(--ink-soft); }
+
+  .price { font-family: var(--mono); font-size: 14.5px; font-weight: 700; cursor: pointer; border-radius: 6px; padding: 3px 6px; margin: -3px -6px; }
+  .price:hover { background: var(--panel-2); box-shadow: inset 0 0 0 1px var(--line); }
+  .price.empty { color: var(--muted); font-weight: 500; }
+  .price input {
+    font-family: var(--mono); font-size: 14px; font-weight: 700; width: 92px; text-align: right;
+    border: 1px solid var(--accent); border-radius: 6px; padding: 3px 6px; outline: none;
+  }
+
+  .chg { font-family: var(--mono); font-size: 13.5px; font-weight: 700; white-space: nowrap; }
+  .chg-amt { font-family: var(--mono); font-size: 11.5px; margin-top: 1px; opacity: .8; }
+  .up   { color: var(--up); }
+  .down { color: var(--down); }
+  .flat { color: var(--muted); }
+
+  .stat {
+    display: inline-flex; align-items: center; gap: 5px; font-size: 10.5px; font-weight: 700;
+    padding: 3px 7px; border-radius: 20px; font-family: var(--sans);
+  }
+  .stat.live   { background: var(--down-bg); color: var(--down); }
+  .stat.manual { background: #EEF0F4; color: var(--accent); }
+  .stat.fail   { background: var(--warn-bg); color: var(--warn); }
+  .stat .d { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+
+  /* ---------- footnote ---------- */
+  .legend {
+    display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+    margin-top: 14px; padding: 13px 16px; background: var(--panel);
+    border: 1px solid var(--line); border-radius: 11px; font-size: 12px; color: var(--ink-soft);
+  }
+  .legend .swatch { display: inline-flex; align-items: center; gap: 6px; }
+  .legend .box { width: 11px; height: 11px; border-radius: 3px; }
+  .legend .note { color: var(--muted); font-size: 11.5px; margin-left: auto; }
+  .disclaimer { font-size: 11px; color: var(--muted); margin-top: 12px; line-height: 1.6; }
+  .disclaimer b { color: var(--ink-soft); font-weight: 700; }
+
+  @media (max-width: 620px) {
+    .hide-sm { display: none; }
+    .cell.hero { flex: 1 1 100%; }
+    .brand h1 { font-size: 17px; }
+  }
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="h-top">
+      <div class="brand">
+        <p class="eyebrow">차이나 반도체 모니터</p>
+        <h1>TIGER 차이나반도체FACTSET 보유종목</h1>
+        <div class="sub">396520 · 상위 10종목 · 구성비 기준 2026.07.19</div>
+      </div>
+      <div class="controls">
+        <label class="auto-toggle" title="30초마다 자동 새로고침">
+          <input type="checkbox" id="autoChk" checked /> 자동 30초
+        </label>
+        <button class="action primary" id="refreshBtn">새로고침</button>
+      </div>
+    </div>
+
+    <div class="strip">
+      <div class="cell hero">
+        <div class="k">가중 등락 추정 <span style="text-transform:none;font-weight:600">(모니터링 종목 기준)</span></div>
+        <div class="v" id="weightedChg">—</div>
+      </div>
+      <div class="cell">
+        <div class="k">연동 상태</div>
+        <div class="v small" style="margin-top:6px"><span class="livepill off" id="livePill"><span class="dot"></span>대기</span></div>
+      </div>
+      <div class="cell">
+        <div class="k">수신 종목</div>
+        <div class="v" id="okCount">0 / 10</div>
+      </div>
+      <div class="cell hide-sm">
+        <div class="k">갱신 시각</div>
+        <div class="v small" id="updatedAt" style="margin-top:6px">—</div>
+      </div>
+    </div>
+  </header>
+
+  <div class="board">
+    <table>
+      <thead>
+        <tr>
+          <th class="l"></th>
+          <th class="l">종목</th>
+          <th class="l hide-sm">코드 · 시장</th>
+          <th>구성비</th>
+          <th>현재가 (CNY)</th>
+          <th>등락률</th>
+          <th class="l">상태</th>
+        </tr>
+      </thead>
+      <tbody id="rows"></tbody>
+    </table>
+  </div>
+
+  <div class="legend">
+    <span class="swatch"><span class="box" style="background:var(--up)"></span> 상승(红)</span>
+    <span class="swatch"><span class="box" style="background:var(--down)"></span> 하락(绿)</span>
+    <span class="note">중국 증시 관례에 따라 <b style="color:var(--up)">빨강=상승 / </b><b style="color:var(--down)">초록=하락</b>으로 표시합니다</span>
+  </div>
+
+  <p class="disclaimer">
+    <b>데이터</b> 東方財富(Eastmoney) 공개 엔드포인트에서 자동 연동을 시도합니다. 브라우저 보안정책(CORS·CSP)이나
+    거래소 데이터 제약으로 자동 수신이 막힐 수 있으며, 그럴 경우 해당 종목은 <b>실패</b>로 표시됩니다 —
+    <b>현재가 칸을 클릭하면 값을 직접 입력</b>할 수 있고, 등락률·가중 추정치가 함께 갱신됩니다.
+    시세는 지연될 수 있으며 투자 판단의 근거로 삼기 전 증권사 앱에서 반드시 재확인하세요. 매매 권유가 아닙니다.
+  </p>
+</div>
+
+<script>
+  // ---- 보유종목 (구성비 2026.07.19 기준) ----
+  // secid 접두: 1 = 상하이(SSE), 0 = 선전(SZSE)
+  const HOLDINGS = [
+    { rank:1,  kr:"캄브리콘",   cn:"寒武纪",   code:"688256", mkt:1, board:"커촹반",     w:10.10 },
+    { rank:2,  kr:"기가디바이스", cn:"兆易创新", code:"603986", mkt:1, board:"상하이 메인", w:9.86 },
+    { rank:3,  kr:"중신궈지(SMIC)", cn:"中芯国际", code:"688981", mkt:1, board:"커촹반",  w:9.24 },
+    { rank:4,  kr:"나우라",     cn:"北方华创", code:"002371", mkt:0, board:"선전 메인",   w:9.10 },
+    { rank:5,  kr:"하이곤",     cn:"海光信息", code:"688041", mkt:1, board:"커촹반",     w:9.05 },
+    { rank:6,  kr:"중웨이(AMEC)", cn:"中微公司", code:"688012", mkt:1, board:"커촹반",   w:8.48 },
+    { rank:7,  kr:"란치커지",   cn:"澜起科技", code:"688008", mkt:1, board:"커촹반",     w:6.41 },
+    { rank:8,  kr:"창촨커지",   cn:"长川科技", code:"300604", mkt:0, board:"촹예반",     w:5.08 },
+    { rank:9,  kr:"화하이칭커", cn:"华海清科", code:"688120", mkt:1, board:"커촹반",     w:3.79 },
+    { rank:10, kr:"퉈징커지",   cn:"拓荆科技", code:"688072", mkt:1, board:"커촹반",     w:3.73 },
+  ];
+
+  // 종목별 상태: { price, pct, amt, source: 'live'|'manual'|'fail'|null }
+  const state = HOLDINGS.map(() => ({ price:null, pct:null, amt:null, source:null }));
+
+  const $rows = document.getElementById('rows');
+  const secids = HOLDINGS.map(h => `${h.mkt}.${h.code}`).join(',');
+
+  function fmt(n, d=2){ return (n==null||isNaN(n)) ? '—' : Number(n).toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d}); }
+  function cls(v){ return v>0 ? 'up' : v<0 ? 'down' : 'flat'; }
+  function sign(v){ return v>0 ? '+' : ''; }
+
+  function render(){
+    $rows.innerHTML = '';
+    HOLDINGS.forEach((h,i) => {
+      const s = state[i];
+      const tr = document.createElement('tr');
+
+      const priceCell = s.price!=null
+        ? `<span class="price" data-i="${i}">${fmt(s.price)}</span>`
+        : `<span class="price empty" data-i="${i}">입력</span>`;
+
+      let chgHtml = '<span class="chg flat">—</span>';
+      if (s.pct != null){
+        chgHtml = `<div class="chg ${cls(s.pct)}">${sign(s.pct)}${fmt(s.pct)}%</div>` +
+                  (s.amt!=null ? `<div class="chg-amt ${cls(s.pct)}">${sign(s.amt)}${fmt(s.amt)}</div>` : '');
+      }
+
+      let stat = '<span class="stat fail"><span class="d"></span>대기</span>';
+      if (s.source==='live')   stat = '<span class="stat live"><span class="d"></span>실시간</span>';
+      if (s.source==='manual') stat = '<span class="stat manual"><span class="d"></span>수동</span>';
+      if (s.source==='fail')   stat = '<span class="stat fail"><span class="d"></span>수신 실패</span>';
+
+      tr.innerHTML =
+        `<td class="rank">${h.rank}</td>` +
+        `<td class="name-cell"><div class="name-kr">${h.kr}</div><div class="name-cn">${h.cn}</div></td>` +
+        `<td class="code hide-sm">${h.code}<br><span class="tag">${h.board}</span></td>` +
+        `<td class="weight">${h.w.toFixed(2)}%</td>` +
+        `<td>${priceCell}</td>` +
+        `<td>${chgHtml}</td>` +
+        `<td style="text-align:left">${stat}</td>`;
+      $rows.appendChild(tr);
+    });
+    bindPriceEdit();
+    updateSummary();
+  }
+
+  function updateSummary(){
+    const ok = state.filter(s => s.source==='live' || s.source==='manual').length;
+    document.getElementById('okCount').textContent = `${ok} / ${HOLDINGS.length}`;
+
+    // 가중 등락: 값이 있는 종목의 구성비로 정규화
+    let wsum=0, acc=0;
+    state.forEach((s,i)=>{ if(s.pct!=null){ wsum+=HOLDINGS[i].w; acc+=HOLDINGS[i].w*s.pct; } });
+    const el = document.getElementById('weightedChg');
+    if (wsum>0){
+      const v = acc/wsum;
+      el.textContent = `${sign(v)}${fmt(v)}%`;
+      el.className = 'v ' + cls(v);
+    } else { el.textContent = '—'; el.className='v'; }
+  }
+
+  function setLive(on){
+    const p = document.getElementById('livePill');
+    p.className = 'livepill ' + (on ? 'on':'off');
+    p.innerHTML = `<span class="dot"></span>${on ? '연동됨':'수동 모드'}`;
+  }
+  function stamp(){
+    const d = new Date();
+    document.getElementById('updatedAt').textContent =
+      d.toLocaleTimeString('ko-KR',{hour12:false});
+  }
+
+  // ---------- 수동 입력 ----------
+  function bindPriceEdit(){
+    document.querySelectorAll('.price').forEach(el=>{
+      el.onclick = ()=>{
+        const i = +el.dataset.i, s = state[i];
+        const cur = s.price!=null ? s.price : '';
+        el.outerHTML = `<input type="number" step="0.01" value="${cur}" data-i="${i}" />`;
+        const inp = document.querySelector(`input[data-i="${i}"]`);
+        inp.focus(); inp.select();
+        const commit = ()=>{
+          const v = parseFloat(inp.value);
+          if(!isNaN(v) && v>0){
+            const prev = s.price;
+            s.price = v; s.source='manual';
+            // 사용자가 전일종가를 알 수 없으므로, 이전 자동값이 있으면 등락 유지, 없으면 등락 비움
+            if (prev==null && s.pct==null){ s.pct=null; s.amt=null; }
+            setLive(state.some(x=>x.source==='live'));
+          }
+          render();
+        };
+        inp.onblur = commit;
+        inp.onkeydown = e=>{ if(e.key==='Enter') inp.blur(); if(e.key==='Escape') render(); };
+      };
+    });
+  }
+
+  // ---------- 자동 연동: fetch(JSON) → JSONP ----------
+  const FIELDS = 'f2,f3,f4,f12,f13,f14';
+  function applyBatch(list){
+    if(!list) return 0;
+    let n=0;
+    list.forEach(item=>{
+      const code = String(item.f12);
+      const idx = HOLDINGS.findIndex(h=>h.code===code);
+      if(idx<0) return;
+      const price = Number(item.f2), pct = Number(item.f3), amt = Number(item.f4);
+      if(!isNaN(price) && price>0){
+        state[idx] = { price, pct:isNaN(pct)?null:pct, amt:isNaN(amt)?null:amt, source:'live' };
+        n++;
+      }
+    });
+    return n;
+  }
+
+  function tryFetch(){
+    const url = `https://push2.eastmoney.com/api/qt/ulist.np/get?fltt=2&secids=${secids}&fields=${FIELDS}`;
+    return fetch(url).then(r=>r.json()).then(j=>{
+      const got = applyBatch(j && j.data && j.data.diff);
+      if(got>0) return got;
+      throw new Error('empty');
+    });
+  }
+
+  function tryJsonp(){
+    return new Promise((resolve,reject)=>{
+      const cb = 'jp_' + Math.random().toString(36).slice(2);
+      const url = `https://push2.eastmoney.com/api/qt/ulist.np/get?fltt=2&cb=${cb}&secids=${secids}&fields=${FIELDS}`;
+      const sc = document.createElement('script');
+      const done = ok=>{ delete window[cb]; sc.remove(); ok===false?reject(new Error('jsonp')):resolve(ok); };
+      const timer = setTimeout(()=>done(false), 6000);
+      window[cb] = j=>{ clearTimeout(timer); const n=applyBatch(j && j.data && j.data.diff); n>0?done(n):done(false); };
+      sc.onerror = ()=>{ clearTimeout(timer); done(false); };
+      sc.src = url; document.head.appendChild(sc);
+    });
+  }
+
+  let loading = false;
+  function refresh(){
+    if(loading) return; loading = true;
+    const btn = document.getElementById('refreshBtn');
+    btn.textContent = '불러오는 중…'; btn.disabled = true;
+
+    const finish = live=>{
+      // 수신 안 된 종목 중 수동값 없는 건 '실패'로
+      state.forEach(s=>{ if(s.source!=='live' && s.source!=='manual') s.source='fail'; });
+      setLive(live); stamp(); render();
+      btn.textContent = '새로고침'; btn.disabled = false; loading=false;
+    };
+
+    tryFetch()
+      .then(()=>finish(true))
+      .catch(()=> tryJsonp().then(()=>finish(true)).catch(()=>finish(false)) );
+  }
+
+  // ---------- 자동 새로고침 ----------
+  let timer = null;
+  function schedule(){
+    if(timer){ clearInterval(timer); timer=null; }
+    if(document.getElementById('autoChk').checked){ timer = setInterval(refresh, 30000); }
+  }
+  document.getElementById('autoChk').addEventListener('change', schedule);
+  document.getElementById('refreshBtn').addEventListener('click', refresh);
+
+  render();
+  refresh();
+  schedule();
+</script>
