@@ -70,6 +70,29 @@
   .auto-toggle { display: flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--ink-soft); user-select: none; cursor: pointer; }
   .auto-toggle input { accent-color: var(--accent); width: 15px; height: 15px; }
 
+  /* ---------- index band ---------- */
+  .idx-band { display: flex; gap: 12px; margin-top: 16px; flex-wrap: wrap; }
+  .idx-tile {
+    flex: 1; min-width: 220px; background: var(--panel-2); border: 1px solid var(--line);
+    border-radius: 12px; padding: 13px 16px; position: relative; overflow: hidden;
+  }
+  .idx-tile.primary {
+    background: linear-gradient(135deg, #2E3A52 0%, #3B4A6B 100%);
+    border-color: #2E3A52;
+  }
+  .idx-tile.primary .it-label,
+  .idx-tile.primary .it-sub { color: #AEB8CC; }
+  .idx-tile.primary .it-value { color: #fff; }
+  .it-label { font-size: 10.5px; letter-spacing: .06em; text-transform: uppercase; font-weight: 700; color: var(--accent-dim); display: flex; align-items: center; gap: 6px; }
+  .it-value { font-size: 24px; font-weight: 800; font-family: var(--mono); font-variant-numeric: tabular-nums; margin-top: 5px; line-height: 1.1; }
+  .it-row { display: flex; align-items: baseline; gap: 9px; margin-top: 4px; }
+  .it-chg { font-family: var(--mono); font-size: 13.5px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .it-sub { font-size: 11px; color: var(--muted); margin-top: 6px; font-family: var(--sans); }
+  .mini-pill { font-size: 9.5px; font-weight: 700; padding: 2px 6px; border-radius: 20px; background: rgba(255,255,255,.14); color: #CDD6E6; letter-spacing: .03em; }
+  .etf-editable { cursor: pointer; border-radius: 6px; padding: 1px 5px; margin: -1px -5px; transition: background .12s; }
+  .etf-editable:hover { background: rgba(0,0,0,.05); }
+  .idx-tile:not(.primary) .mini-pill { background: var(--panel); color: var(--accent-dim); border: 1px solid var(--line); }
+
   /* ---------- status strip ---------- */
   .strip {
     display: flex; align-items: stretch; gap: 1px; margin-top: 16px;
@@ -111,6 +134,7 @@
   .rank { font-family: var(--mono); font-size: 12px; color: var(--accent-dim); font-weight: 700; text-align: left; width: 26px; }
   .name-cell { text-align: left; }
   .name-kr { font-weight: 700; font-size: 14px; }
+  .name-en { font-weight: 500; font-size: 11.5px; color: var(--accent-dim); font-family: var(--mono); margin-left: 3px; }
   .name-cn { font-size: 11.5px; color: var(--muted); margin-top: 1px; }
   .code { font-family: var(--mono); font-size: 12px; color: var(--ink-soft); text-align: left; }
   .tag {
@@ -177,11 +201,25 @@
       </div>
     </div>
 
-    <div class="strip">
-      <div class="cell hero">
-        <div class="k">가중 등락 추정 <span style="text-transform:none;font-weight:600">(모니터링 종목 기준)</span></div>
-        <div class="v" id="weightedChg">—</div>
+    <div class="idx-band">
+      <div class="idx-tile primary">
+        <div class="it-label">기초지수 근사 <span class="mini-pill">구성종목 실시간 가중</span></div>
+        <div class="it-row">
+          <div class="it-value" id="weightedChg">—</div>
+        </div>
+        <div class="it-sub">Eastmoney 실시간 구성종목 등락률을 ETF 구성비로 가중 · 20~30분 지연되는 공식 지수보다 장중 움직임을 빠르게 반영</div>
       </div>
+      <div class="idx-tile">
+        <div class="it-label">TIGER 396520 <span class="mini-pill">KRX ETF</span></div>
+        <div class="it-row">
+          <div class="it-value" id="etfPrice" style="font-size:22px">—</div>
+          <div class="it-chg flat" id="etfChg">—</div>
+        </div>
+        <div class="it-sub" id="etfSub">이 ETF 자체의 시장가 · 지수를 추종하는 가장 직접적인 대용치</div>
+      </div>
+    </div>
+
+    <div class="strip">
       <div class="cell">
         <div class="k">연동 상태</div>
         <div class="v small" style="margin-top:6px"><span class="livepill off" id="livePill"><span class="dot"></span>대기</span></div>
@@ -232,16 +270,16 @@
   // ---- 보유종목 (구성비 2026.07.19 기준) ----
   // secid 접두: 1 = 상하이(SSE), 0 = 선전(SZSE)
   const HOLDINGS = [
-    { rank:1,  kr:"캄브리콘",   cn:"寒武纪",   code:"688256", mkt:1, board:"커촹반",     w:10.10 },
-    { rank:2,  kr:"기가디바이스", cn:"兆易创新", code:"603986", mkt:1, board:"상하이 메인", w:9.86 },
-    { rank:3,  kr:"중신궈지(SMIC)", cn:"中芯国际", code:"688981", mkt:1, board:"커촹반",  w:9.24 },
-    { rank:4,  kr:"나우라",     cn:"北方华创", code:"002371", mkt:0, board:"선전 메인",   w:9.10 },
-    { rank:5,  kr:"하이곤",     cn:"海光信息", code:"688041", mkt:1, board:"커촹반",     w:9.05 },
-    { rank:6,  kr:"중웨이(AMEC)", cn:"中微公司", code:"688012", mkt:1, board:"커촹반",   w:8.48 },
-    { rank:7,  kr:"란치커지",   cn:"澜起科技", code:"688008", mkt:1, board:"커촹반",     w:6.41 },
-    { rank:8,  kr:"창촨커지",   cn:"长川科技", code:"300604", mkt:0, board:"촹예반",     w:5.08 },
-    { rank:9,  kr:"화하이칭커", cn:"华海清科", code:"688120", mkt:1, board:"커촹반",     w:3.79 },
-    { rank:10, kr:"퉈징커지",   cn:"拓荆科技", code:"688072", mkt:1, board:"커촹반",     w:3.73 },
+    { rank:1,  kr:"캄브리콘",   en:"Cambricon",    cn:"寒武纪",   code:"688256", mkt:1, board:"커촹반",     w:10.10 },
+    { rank:2,  kr:"기가디바이스", en:"GigaDevice",  cn:"兆易创新", code:"603986", mkt:1, board:"상하이 메인", w:9.86 },
+    { rank:3,  kr:"중신궈지",   en:"SMIC",          cn:"中芯国际", code:"688981", mkt:1, board:"커촹반",  w:9.24 },
+    { rank:4,  kr:"나우라",     en:"Naura",         cn:"北方华创", code:"002371", mkt:0, board:"선전 메인",   w:9.10 },
+    { rank:5,  kr:"하이곤",     en:"Hygon",         cn:"海光信息", code:"688041", mkt:1, board:"커촹반",     w:9.05 },
+    { rank:6,  kr:"중웨이",     en:"AMEC",          cn:"中微公司", code:"688012", mkt:1, board:"커촹반",   w:8.48 },
+    { rank:7,  kr:"란치커지",   en:"Montage",       cn:"澜起科技", code:"688008", mkt:1, board:"커촹반",     w:6.41 },
+    { rank:8,  kr:"창촨커지",   en:"Chang Chuan",   cn:"长川科技", code:"300604", mkt:0, board:"촹예반",     w:5.08 },
+    { rank:9,  kr:"화하이칭커", en:"Hwatsing",      cn:"华海清科", code:"688120", mkt:1, board:"커촹반",     w:3.79 },
+    { rank:10, kr:"퉈징커지",   en:"Piotech",       cn:"拓荆科技", code:"688072", mkt:1, board:"커촹반",     w:3.73 },
   ];
 
   // 종목별 상태: { price, pct, amt, source: 'live'|'manual'|'fail'|null }
@@ -249,6 +287,9 @@
 
   const $rows = document.getElementById('rows');
   const secids = HOLDINGS.map(h => `${h.mkt}.${h.code}`).join(',');
+
+  // ETF 396520 (KRX) 상태
+  const etf = { price:null, pct:null, amt:null, source:null };
 
   function fmt(n, d=2){ return (n==null||isNaN(n)) ? '—' : Number(n).toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d}); }
   function cls(v){ return v>0 ? 'up' : v<0 ? 'down' : 'flat'; }
@@ -277,7 +318,7 @@
 
       tr.innerHTML =
         `<td class="rank">${h.rank}</td>` +
-        `<td class="name-cell"><div class="name-kr">${h.kr}</div><div class="name-cn">${h.cn}</div></td>` +
+        `<td class="name-cell"><div class="name-kr">${h.kr} <span class="name-en">${h.en}</span></div><div class="name-cn">${h.cn}</div></td>` +
         `<td class="code hide-sm">${h.code}<br><span class="tag">${h.board}</span></td>` +
         `<td class="weight">${h.w.toFixed(2)}%</td>` +
         `<td>${priceCell}</td>` +
@@ -381,6 +422,52 @@
     });
   }
 
+  // ---------- ETF 396520 (KRX, 네이버 증권) ----------
+  function renderEtf(){
+    const $p = document.getElementById('etfPrice');
+    const $c = document.getElementById('etfChg');
+    const $s = document.getElementById('etfSub');
+    if(etf.price!=null){
+      $p.textContent = '₩' + Number(etf.price).toLocaleString('ko-KR');
+      $p.classList.add('etf-editable');
+    } else {
+      $p.textContent = '입력';
+      $p.classList.add('etf-editable');
+    }
+    if(etf.pct!=null){
+      $c.className = 'it-chg ' + cls(etf.pct);
+      $c.textContent = `${sign(etf.pct)}${fmt(etf.pct)}%` + (etf.amt!=null?` (${sign(etf.amt)}${fmt(etf.amt,0)})`:'');
+    } else { $c.className='it-chg flat'; $c.textContent='—'; }
+    if(etf.source==='manual') $s.textContent = '수동 입력값 · 지수를 추종하는 가장 직접적인 대용치';
+    else if(etf.source==='fail') $s.textContent = 'KRX 시세 자동 수신 실패 — 값을 클릭해 직접 입력하세요';
+    else $s.textContent = '이 ETF 자체의 시장가 · 지수를 추종하는 가장 직접적인 대용치';
+
+    // 클릭 시 수동 입력
+    $p.onclick = ()=>{
+      const cur = etf.price!=null ? etf.price : '';
+      $p.outerHTML = `<input id="etfInput" type="number" step="1" value="${cur}" style="font-family:var(--mono);font-size:20px;font-weight:800;width:120px;border:1px solid #fff;border-radius:6px;padding:2px 6px;background:rgba(255,255,255,.9);outline:none" />`;
+      const inp = document.getElementById('etfInput'); inp.focus(); inp.select();
+      const commit = ()=>{ const v=parseFloat(inp.value); if(!isNaN(v)&&v>0){ etf.price=v; etf.source='manual'; } renderEtf(); };
+      inp.onblur = commit;
+      inp.onkeydown = e=>{ if(e.key==='Enter') inp.blur(); if(e.key==='Escape') renderEtf(); };
+    };
+  }
+
+  function tryEtf(){
+    const url = 'https://polling.finance.naver.com/api/realtime/domestic/stock/396520';
+    return fetch(url).then(r=>r.json()).then(j=>{
+      const d = j && (j.datas || (j.result && j.result.areas && j.result.areas[0] && j.result.areas[0].datas));
+      const row = d && d[0];
+      if(!row) throw new Error('no etf');
+      const price = Number(row.nv);
+      let pct = Number(row.cr), amt = Number(row.cv);
+      const down = String(row.rf)==='5' || String(row.rf)==='4';
+      if(down){ pct = -Math.abs(pct); amt = -Math.abs(amt); } else { pct = Math.abs(pct); amt = Math.abs(amt); }
+      if(!isNaN(price) && price>0){ etf.price=price; etf.pct=isNaN(pct)?null:pct; etf.amt=isNaN(amt)?null:amt; etf.source='live'; return true; }
+      throw new Error('bad etf');
+    });
+  }
+
   let loading = false;
   function refresh(){
     if(loading) return; loading = true;
@@ -393,6 +480,9 @@
       setLive(live); stamp(); render();
       btn.textContent = '새로고침'; btn.disabled = false; loading=false;
     };
+
+    // ETF 시세는 구성종목과 독립적으로 병렬 시도
+    tryEtf().catch(()=>{ if(etf.source!=='manual') etf.source='fail'; }).finally(renderEtf);
 
     tryFetch()
       .then(()=>finish(true))
@@ -409,6 +499,7 @@
   document.getElementById('refreshBtn').addEventListener('click', refresh);
 
   render();
+  renderEtf();
   refresh();
   schedule();
 </script>
