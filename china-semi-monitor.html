@@ -135,6 +135,7 @@
   .name-cell { text-align: left; }
   .name-kr { font-weight: 700; font-size: 14px; }
   .name-en { font-weight: 500; font-size: 11.5px; color: var(--accent-dim); font-family: var(--mono); margin-left: 3px; }
+  .wt-sm { display: none; }
   .name-cn { font-size: 11.5px; color: var(--muted); margin-top: 1px; }
   .code { font-family: var(--mono); font-size: 12px; color: var(--ink-soft); text-align: left; }
   .tag {
@@ -182,6 +183,21 @@
     .hide-sm { display: none; }
     .cell.hero { flex: 1 1 100%; }
     .brand h1 { font-size: 17px; }
+    .wrap { padding: 16px 10px 50px; }
+    /* 종목명 아래 구성비 뱃지 노출 */
+    .wt-sm {
+      display: inline-block; margin-left: 8px; font-family: var(--mono);
+      font-size: 10.5px; font-weight: 700; color: var(--accent-dim);
+      background: var(--panel-2); border: 1px solid var(--line);
+      border-radius: 5px; padding: 0 5px;
+    }
+    /* 남은 4개 컬럼이 화면에 들어오도록 여백·글자 축소 */
+    thead th, tbody td { padding: 11px 8px; }
+    .rank { padding-left: 10px; }
+    .price { font-size: 13.5px; }
+    .chg { font-size: 12.5px; }
+    .name-kr { font-size: 13.5px; }
+    .name-en { font-size: 11px; }
   }
 </style>
 
@@ -242,10 +258,10 @@
           <th class="l"></th>
           <th class="l">종목</th>
           <th class="l hide-sm">코드 · 시장</th>
-          <th>구성비</th>
+          <th class="hide-sm">구성비</th>
           <th>현재가 (CNY)</th>
           <th>등락률</th>
-          <th class="l">상태</th>
+          <th class="l hide-sm">상태</th>
         </tr>
       </thead>
       <tbody id="rows"></tbody>
@@ -318,12 +334,12 @@
 
       tr.innerHTML =
         `<td class="rank">${h.rank}</td>` +
-        `<td class="name-cell"><div class="name-kr">${h.kr} <span class="name-en">${h.en}</span></div><div class="name-cn">${h.cn}</div></td>` +
+        `<td class="name-cell"><div class="name-kr">${h.kr} <span class="name-en">${h.en}</span></div><div class="name-cn">${h.cn}<span class="wt-sm">${h.w.toFixed(2)}%</span></div></td>` +
         `<td class="code hide-sm">${h.code}<br><span class="tag">${h.board}</span></td>` +
-        `<td class="weight">${h.w.toFixed(2)}%</td>` +
+        `<td class="weight hide-sm">${h.w.toFixed(2)}%</td>` +
         `<td>${priceCell}</td>` +
         `<td>${chgHtml}</td>` +
-        `<td style="text-align:left">${stat}</td>`;
+        `<td class="hide-sm" style="text-align:left">${stat}</td>`;
       $rows.appendChild(tr);
     });
     bindPriceEdit();
