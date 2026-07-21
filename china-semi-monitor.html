@@ -455,8 +455,7 @@
       $c.textContent = `${sign(etf.pct)}${fmt(etf.pct)}%` + (etf.amt!=null?` (${sign(etf.amt)}${fmt(etf.amt,0)})`:'');
     } else { $c.className='it-chg flat'; $c.textContent='—'; }
     if(etf.source==='manual') $s.textContent = '수동 입력값 · 지수를 추종하는 가장 직접적인 대용치';
-    else if(etf.source==='fail') $s.textContent = 'KRX 시세 자동 수신 실패 — 값을 클릭해 직접 입력하세요';
-    else $s.textContent = '구글 시트 경유 KRX 시세(GOOGLEFINANCE, ~20분 지연)' + (etf.updated ? ' · 시트갱신 '+etf.updated : '');
+    else $s.textContent = '자동 시세 미지원 · 값을 클릭해 직접 입력하세요';
 
     // 클릭 시 수동 입력
     $p.onclick = ()=>{
@@ -469,36 +468,7 @@
     };
   }
 
-  // 구글 시트(GOOGLEFINANCE) → 웹 게시 CSV. 브라우저에서 CORS 열림.
-  const ETF_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQr07fhQWtngojD-cS8tMaDD9ARtTslo8CGTOYAcx0In93bwkuLpTc7ahvItI_gGInB7DiCmmOv8_mx/pub?gid=844713911&single=true&output=csv';
-
-  function tryEtf(){
-    // 캐시 우회를 위해 타임스탬프 부여
-    const url = ETF_CSV_URL + '&_=' + Date.now();
-    return fetch(url).then(r=>r.text()).then(txt=>{
-      // A열=key, B열=value 구조를 가정하되, 헤더행·추가행이 있어도 견디게 파싱
-      const map = {};
-      txt.trim().split(/\r?\n/).forEach(line=>{
-        const p = line.split(',');
-        if(p.length>=2){
-          const k = p[0].trim().toLowerCase().replace(/^"|"$/g,'');
-          const v = p.slice(1).join(',').trim().replace(/^"|"$/g,'').replace(/,/g,'');
-          map[k]=v;
-        }
-      });
-      const price = parseFloat(map['price']);
-      let pct = parseFloat(map['changepct']);
-      if(isNaN(price) || price<=0) throw new Error('no etf csv');
-      let amt = null;
-      if(!isNaN(pct)){ const prev = price/(1+pct/100); amt = price - prev; }  // 전일종가 역산
-      etf.price = price;
-      etf.pct   = isNaN(pct) ? null : pct;
-      etf.amt   = amt;
-      etf.updated = map['updated'] || null;
-      etf.source = 'live';
-      return true;
-    });
-  }
+  // ETF 396520: 자동 시세 미지원(무료 경로 전부 차단) — 수동 입력만 지원
 
   let loading = false;
   function refresh(){
@@ -513,8 +483,9 @@
       btn.textContent = '새로고침'; btn.disabled = false; loading=false;
     };
 
-    // ETF 시세는 구성종목과 독립적으로 병렬 시도
-    tryEtf().catch(()=>{ if(etf.source!=='manual') etf.source='fail'; }).finally(renderEtf);
+    // ETF 396520은 자동 시세 없이 수동 입력만 (미입력 시 '입력' 상태)
+    if(etf.source!=='manual') etf.source='fail';
+    renderEtf();
 
     tryFetch()
       .then(()=>finish(true))
