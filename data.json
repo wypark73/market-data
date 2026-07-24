@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-07-24T09:25:38.200358+09:00",
+  "updated_at": "2026-07-24T09:31:41.227106+09:00",
   "note": "트리거 발동/미발동 판정은 조회 측에서 수행. 본 파일은 숫자만 제공. DD가 트리거 ±3%p 이내로 근접하면 KRX/HTS 교차확인 규칙 유지.",
   "labels": {
     "360750": "미국 S&P500 ETF",
@@ -1100,22 +1100,22 @@
     "gold_usd": {
       "ok": true,
       "last_date": "2026-07-23",
-      "last": 4043.8,
+      "last": 4047.9,
       "ath": 5318.4,
       "ath_date": "2026-01-29",
       "ath_source": "series_max",
       "ath_stale": false,
       "ath_breach": null,
-      "dd_pct": -23.97,
+      "dd_pct": -23.89,
       "munger_levels": {
         "-20%": 4254.72,
         "-35%": 3456.96,
         "-50%": 2659.2
       },
-      "dist_to_minus20_pct": 5.22,
-      "close_5d_avg": 4056.96,
-      "dd_5d_avg_pct": -23.72,
-      "ma50": 4266.98,
+      "dist_to_minus20_pct": 5.11,
+      "close_5d_avg": 4057.78,
+      "dd_5d_avg_pct": -23.7,
+      "ma50": 4267.06,
       "dates": [
         "2025-07-11",
         "2025-07-14",
@@ -1638,7 +1638,7 @@
         4010.3,
         4071.1,
         4146.9,
-        4043.8
+        4047.9
       ]
     }
   },
@@ -2300,12 +2300,11 @@
     },
     "usdkrw": {
       "ok": true,
-      "last_date": "2026-07-23",
-      "last": 1475.63,
-      "avg_5d": 1479.32,
-      "avg_20d": 1511.087,
+      "last_date": "2026-07-24",
+      "last": 1471.28,
+      "avg_5d": 1477.806,
+      "avg_20d": 1507.327,
       "dates": [
-        "2026-05-01",
         "2026-05-04",
         "2026-05-05",
         "2026-05-06",
@@ -2364,10 +2363,10 @@
         "2026-07-20",
         "2026-07-21",
         "2026-07-22",
-        "2026-07-23"
+        "2026-07-23",
+        "2026-07-24"
       ],
       "values": [
-        1474.01,
         1471.73,
         1476.05,
         1473.96,
@@ -2426,7 +2425,8 @@
         1487.39,
         1475.01,
         1479.72,
-        1475.63
+        1475.63,
+        1471.28
       ]
     },
     "kr10y_monthly": {
@@ -2585,39 +2585,135 @@
   },
   "krx_openapi": {
     "kospi200": {
-      "ok": true,
-      "basDd": "20260723",
-      "last": 1126.33,
-      "chg": 46.11,
-      "chg_pct": 4.27,
-      "raw": {
-        "BAS_DD": "20260723",
-        "IDX_CLSS": "KOSPI",
-        "IDX_NM": "코스피 200",
-        "CLSPRC_IDX": "1126.33",
-        "CMPPREVDD_IDX": "46.11",
-        "FLUC_RT": "4.27",
-        "OPNPRC_IDX": "1109.11",
-        "HGPRC_IDX": "1129.67",
-        "LWPRC_IDX": "1093.73",
-        "ACC_TRDVOL": "132823879",
-        "ACC_TRDVAL": "22647567150863",
-        "MKTCAP": "5418663458590300"
-      }
+      "ok": false,
+      "reason": "탐색 범위 내 데이터 없음",
+      "tried": [
+        {
+          "basDd": "20260723",
+          "error": "HTTPError: HTTP Error 403: Forbidden"
+        },
+        {
+          "basDd": "20260722",
+          "error": "HTTPError: HTTP Error 403: Forbidden"
+        },
+        {
+          "basDd": "20260721",
+          "error": "HTTPError: HTTP Error 403: Forbidden"
+        },
+        {
+          "basDd": "20260720",
+          "error": "HTTPError: HTTP Error 403: Forbidden"
+        },
+        {
+          "basDd": "20260719",
+          "error": "HTTPError: HTTP Error 403: Forbidden"
+        },
+        {
+          "basDd": "20260718",
+          "error": "HTTPError: HTTP Error 403: Forbidden"
+        },
+        {
+          "basDd": "20260717",
+          "error": "HTTPError: HTTP Error 403: Forbidden"
+        },
+        {
+          "basDd": "20260716",
+          "error": "HTTPError: HTTP Error 403: Forbidden"
+        }
+      ]
     }
   },
   "customs": {
     "semi_export": {
       "ok": false,
-      "reason": "resultCode=99 / 시작과 종료의 조회기간은 1년이내 기간만 가능합니다.",
-      "raw_head": "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><response><header><resultCode>99</resultCode><resultMsg>시작과 종료의 조회기간은 1년이내 기간만 가능합니다.</resultMsg></header><body/></response>"
+      "reason": "전 구간 조회 실패",
+      "windows": [
+        {
+          "range": "202401-202412",
+          "ok": false,
+          "reason": "기간(YYYYMM) 또는 수출금액 필드를 찾지 못함(태그명 확정 필요)",
+          "sample_tags": [
+            "balPayments",
+            "expDlr",
+            "expWgt",
+            "hsCode",
+            "impDlr",
+            "impWgt",
+            "statKor",
+            "year"
+          ],
+          "sample_item": {
+            "balPayments": "-105255662",
+            "expDlr": "2073342183",
+            "expWgt": "435793",
+            "hsCode": "8542311000",
+            "impDlr": "2178597845",
+            "impWgt": "251147",
+            "statKor": "모노리식(monolithic) 집적회로",
+            "year": "2024.01"
+          },
+          "n_items": 241
+        },
+        {
+          "range": "202501-202512",
+          "ok": false,
+          "reason": "기간(YYYYMM) 또는 수출금액 필드를 찾지 못함(태그명 확정 필요)",
+          "sample_tags": [
+            "balPayments",
+            "expDlr",
+            "expWgt",
+            "hsCode",
+            "impDlr",
+            "impWgt",
+            "statKor",
+            "year"
+          ],
+          "sample_item": {
+            "balPayments": "-558161380",
+            "expDlr": "1916199148",
+            "expWgt": "427618",
+            "hsCode": "8542311000",
+            "impDlr": "2474360528",
+            "impWgt": "233268",
+            "statKor": "모노리식(monolithic) 집적회로",
+            "year": "2025.01"
+          },
+          "n_items": 241
+        },
+        {
+          "range": "202601-202607",
+          "ok": false,
+          "reason": "기간(YYYYMM) 또는 수출금액 필드를 찾지 못함(태그명 확정 필요)",
+          "sample_tags": [
+            "balPayments",
+            "expDlr",
+            "expWgt",
+            "hsCode",
+            "impDlr",
+            "impWgt",
+            "statKor",
+            "year"
+          ],
+          "sample_item": {
+            "balPayments": "-268826754",
+            "expDlr": "2408512319",
+            "expWgt": "519207",
+            "hsCode": "8542311000",
+            "impDlr": "2677339073",
+            "impWgt": "244117",
+            "statKor": "모노리식(monolithic) 집적회로",
+            "year": "2026.01"
+          },
+          "n_items": 121
+        }
+      ]
     }
   },
   "etfs": {
     "360750": {
       "ok": true,
       "last_date": "2026-07-24",
-      "last": 27110.0,
+      "last": 27095.0,
       "dates": [
         "2026-04-27",
         "2026-04-28",
@@ -2740,13 +2836,13 @@
         27370.0,
         27525.0,
         27280.0,
-        27110.0
+        27095.0
       ]
     },
     "102110": {
       "ok": true,
       "last_date": "2026-07-24",
-      "last": 110140.0,
+      "last": 109225.0,
       "dates": [
         "2026-04-27",
         "2026-04-28",
@@ -2869,13 +2965,13 @@
         108110.0,
         108580.0,
         113310.0,
-        110140.0
+        109225.0
       ]
     },
     "148070": {
       "ok": true,
       "last_date": "2026-07-24",
-      "last": 103120.0,
+      "last": 103135.0,
       "dates": [
         "2026-04-27",
         "2026-04-28",
@@ -2998,7 +3094,7 @@
         103995.0,
         103465.0,
         103550.0,
-        103120.0
+        103135.0
       ]
     },
     "0085P0": {
@@ -3133,7 +3229,7 @@
     "411060": {
       "ok": true,
       "last_date": "2026-07-24",
-      "last": 26500.0,
+      "last": 26485.0,
       "dates": [
         "2026-04-27",
         "2026-04-28",
@@ -3256,7 +3352,7 @@
         26635.0,
         27115.0,
         26895.0,
-        26500.0
+        26485.0
       ]
     }
   }
