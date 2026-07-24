@@ -1,14 +1,14 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-07-24T10:35:53.673539+09:00",
+  "updated_at": "2026-07-24T13:07:24.289310+09:00",
   "run_slot": "manual",
   "data_freshness": {
-    "data_json_updated_at": "2026-07-24T10:35:38.346941+09:00",
-    "kospi200_last_date": "2026-07-23",
+    "data_json_updated_at": "2026-07-24T13:06:59.466140+09:00",
+    "kospi200_last_date": "2026-07-24",
     "sp500_last_date": "2026-07-23",
     "hy_oas_last_date": "2026-07-22",
     "stale": false,
-    "intraday_risk": false
+    "intraday_risk": true
   },
   "mode": {
     "current": "중도",
@@ -37,7 +37,7 @@
       "level": 960.19,
       "dd_pct": -35.0
     },
-    "dist_to_next_pp": 11.25,
+    "dist_to_next_pp": 9.01,
     "buy_gate_open": true
   },
   "inflation": {
@@ -53,7 +53,7 @@
   },
   "gate": {
     "status": "open",
-    "usdkrw": 1465.58,
+    "usdkrw": 1462.98,
     "usdkrw_leg": false,
     "cds_leg": false,
     "cds_check_required": false,
@@ -73,10 +73,10 @@
   },
   "last_seen": {
     "kospi200": {
-      "date": "2026-07-23",
-      "close": 1126.33,
-      "intraday_risk": false,
-      "observed_at": "2026-07-24T10:35:53.673539+09:00",
+      "date": "2026-07-24",
+      "close": 1093.22,
+      "intraday_risk": true,
+      "observed_at": "2026-07-24T13:07:24.289310+09:00",
       "run_slot": "manual"
     }
   },
