@@ -1,12 +1,12 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-07-24T18:07:33.795647+09:00",
-  "run_slot": "A",
+  "updated_at": "2026-07-25T07:38:36.766709+09:00",
+  "run_slot": "B",
   "data_freshness": {
-    "data_json_updated_at": "2026-07-24T18:07:13.119399+09:00",
+    "data_json_updated_at": "2026-07-25T07:38:14.437440+09:00",
     "kospi200_last_date": "2026-07-24",
-    "sp500_last_date": "2026-07-23",
-    "hy_oas_last_date": "2026-07-22",
+    "sp500_last_date": "2026-07-24",
+    "hy_oas_last_date": "2026-07-23",
     "stale": false,
     "intraday_risk": false
   },
@@ -37,7 +37,7 @@
       "level": 960.19,
       "dd_pct": -35.0
     },
-    "dist_to_next_pp": 6.85,
+    "dist_to_next_pp": 6.46,
     "buy_gate_open": true
   },
   "inflation": {
@@ -53,7 +53,7 @@
   },
   "gate": {
     "status": "open",
-    "usdkrw": 1463.78,
+    "usdkrw": 1459.42,
     "usdkrw_leg": false,
     "cds_leg": false,
     "cds_check_required": false,
@@ -74,10 +74,10 @@
   "last_seen": {
     "kospi200": {
       "date": "2026-07-24",
-      "close": 1061.31,
+      "close": 1055.58,
       "intraday_risk": false,
-      "observed_at": "2026-07-24T18:07:33.795647+09:00",
-      "run_slot": "A"
+      "observed_at": "2026-07-25T07:38:36.766709+09:00",
+      "run_slot": "B"
     }
   },
   "alerts_fired": {
@@ -87,13 +87,20 @@
     "CPI_SERIES_MISMATCH": null,
     "DATA_STALE": null,
     "WINDOW_D30": null,
-    "USDKRW_WARN": "2026-07-24",
+    "USDKRW_WARN": "2026-07-25",
     "HY_OAS_WARN": null,
     "CPI_NEAR": null,
     "ATH_STALE": null,
     "MODE_DRIFT": null,
     "INFL_COUNT_CHANGE": null,
-    "HEARTBEAT": null
+    "HEARTBEAT": null,
+    "CLOSE_REVISED": "2026-07-25"
   },
-  "pending_ack": []
+  "pending_ack": [
+    {
+      "code": "CLOSE_REVISED:2026-07-24",
+      "raised_at": "2026-07-25",
+      "detail": "KOSPI200 2026-07-24 종가 정정 감지"
+    }
+  ]
 }
