@@ -279,7 +279,7 @@
     최신 상태로 반영합니다. 구성비는 1CU 기준이며 공시 자체가 하루 지연될 수 있습니다.
     조회에 실패하면 내장된 구버전 목록으로 대체되고 상단에 그 사실이 표시됩니다 —
     <b>해외에서 접속하면 조회가 차단</b>되어 이 상태가 됩니다.
-    <br><span style="color:var(--muted)">build 2026-07-28a · 직접 조회판</span>
+    <br><span style="color:var(--muted)">build 2026-07-28b · 직접 조회판</span>
   </p>
 
   <p class="disclaimer">
@@ -383,49 +383,82 @@
     });
   }
 
-  // 응답은 <tr> 조각의 나열이다.
-  // 셀 순서: [0] 종목코드 "688256 C1 EQUITY" / [1] 종목명 / [2] 수량 / [3] 평가금액 / [4] 비중 / [5] 등락
+  // 응답은 <tr> 조각의 나열이다. 관측된 셀 순서:
+  //   [0] "688256 C1 EQUITY" / [1] 종목명 / [2] 수량 / [3] 평가금액 / [4] 비중 / [5] 등락
+  // 다만 셀 위치를 신뢰하지 않는다. 서버가 접속 환경(User-Agent 등)에 따라 다른 마크업을
+  // 반환할 수 있으므로, 위치 대신 내용으로 찾는다.
+  //   · 코드 셀  = "숫자 + 접미 + EQUITY" 패턴이 나타나는 첫 셀
+  //   · 비중 셀  = 코드 셀 이후 등락 표시(상승/하락/없음) 이전의, 100 이하인 마지막 숫자 셀
+  //     (수량·평가금액은 100을 넘거나 비중보다 앞서므로 자연히 배제된다)
+  function parseRow(tr){
+    const tds = Array.prototype.map.call(
+      tr.querySelectorAll('td'),
+      td => String(td.textContent).replace(/\s+/g, ' ').trim()
+    );
+    if (tds.length < 3) return null;
+
+    let ci = -1, m = null;
+    for (let i = 0; i < tds.length; i++){
+      const mm = tds[i].match(/(\d{4,6})\s+([A-Z][A-Z0-9]{0,3})\s+EQUITY/);
+      if (mm){ ci = i; m = mm; break; }
+    }
+    if (!m) return null;
+
+    let w = null;
+    for (let i = ci + 1; i < tds.length; i++){
+      if (/상승|하락|없음/.test(tds[i])) break;
+      const t = tds[i].replace(/,/g, '');
+      if (/^\d+(\.\d+)?$/.test(t)){
+        const v = parseFloat(t);
+        if (isFinite(v) && v > 0 && v <= 100) w = v;
+      }
+    }
+    if (w === null) return null;
+
+    return { code: m[1], suffix: m[2], w: w, en: (tds[ci + 1] || '').trim() };
+  }
+
   function parsePdf(fragment){
     const doc  = new DOMParser().parseFromString('<table>' + fragment + '</table>', 'text/html');
+    const trs  = doc.querySelectorAll('tr');
     const out  = [];
     const unsupported = [];
     let wsum = 0;
 
-    doc.querySelectorAll('tr').forEach(tr => {
-      const td = tr.querySelectorAll('td');
-      if (td.length < 5) return;
+    trs.forEach(tr => {
+      const r = parseRow(tr);
+      if (!r) return;
+      wsum += r.w;
 
-      const w = parseFloat(String(td[4].textContent).replace(/[^0-9.]/g, ''));
-      if (!isFinite(w) || w <= 0) return;
-      wsum += w;
-
-      const raw = String(td[0].textContent).replace(/\s+/g, ' ').trim();
-      const m   = raw.match(/^(\d{4,6})\s+([A-Z][A-Z0-9]{0,3})\s+EQUITY$/);
-      if (!m) return;                                   // 원화현금 등 비주식 행
-
-      const code = m[1], mkt = MKT_MAP[m[2]];
-      const en   = String(td[1].textContent).replace(/\s+/g, ' ').trim();
-
-      if (mkt === undefined || code.length !== 6){      // 홍콩 상장 등
-        unsupported.push({ code: code, suffix: m[2], w: w, en: en });
+      const mkt = MKT_MAP[r.suffix];
+      if (mkt === undefined || r.code.length !== 6){      // 홍콩 상장 등
+        unsupported.push(r);
         return;
       }
-
-      const nm = NAMES[code] || [];
+      const nm = NAMES[r.code] || [];
       out.push({
-        code : code,
+        code : r.code,
         mkt  : mkt,
-        w    : w,
-        en   : en,
-        kr   : nm[0] || en || code,
+        w    : r.w,
+        en   : r.en,
+        kr   : nm[0] || r.en || r.code,
         cn   : nm[1] || '',
-        board: boardOf(code)
+        board: boardOf(r.code)
       });
     });
 
     out.sort((a, b) => b.w - a.w);
     out.forEach((h, i) => { h.rank = i + 1; });
-    return { list: out, unsupported: unsupported, wsum: Math.round(wsum * 100) / 100 };
+
+    return {
+      list: out,
+      unsupported: unsupported,
+      wsum: Math.round(wsum * 100) / 100,
+      // 진단용: 실패 시 화면에 표시해 원인을 좁힌다
+      diag: 'len=' + fragment.length + ' tr=' + trs.length +
+            ' EQ=' + (fragment.indexOf('EQUITY') >= 0 ? 'Y' : 'N') +
+            ' eq=' + out.length
+    };
   }
 
   function useFallback(reason){
@@ -438,11 +471,13 @@
   async function loadHoldings(){
     const today = new Date();
     let lastErr = '데이터 없음';
+    let lastDiag = '';
 
     for (let i = 0; i <= WALK_BACK; i++){
       const ds = fixDateOf(new Date(today.getTime() - i * 86400000));
       try {
         const r = parsePdf(await fetchPdf(ds));
+        if (!lastDiag) lastDiag = r.diag;
         if (r.list.length >= 5){
           let note = `396520 · ${r.list.length}종목 · 구성비 기준 ${ds}`;
           if (r.unsupported.length) note += ` · 미지원 거래소 ${r.unsupported.length}종목 제외`;
@@ -454,7 +489,7 @@
         lastErr = String(e.message || e);
       }
     }
-    useFallback(lastErr);
+    useFallback(lastErr + (lastDiag ? ' | ' + lastDiag : ''));
   }
 
   // ETF 396520 (KRX) 상태
