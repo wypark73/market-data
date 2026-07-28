@@ -275,9 +275,10 @@
   </div>
 
   <p class="disclaimer">
-    <b>구성종목</b> 미래에셋자산운용이 공시하는 자산구성(PDF)을 매 영업일 수집해 자동 반영합니다.
-    수집 실패 시 마지막 성공본이 유지되며, 상단에 기준일과 경과일이 표시됩니다.
-    구성비는 1CU 기준이고 공시 자체가 하루 지연될 수 있습니다.
+    <b>구성종목</b> 미래에셋자산운용이 공시하는 자산구성(PDF)을 이 페이지가 열릴 때마다 직접 조회해
+    최신 상태로 반영합니다. 구성비는 1CU 기준이며 공시 자체가 하루 지연될 수 있습니다.
+    조회에 실패하면 내장된 구버전 목록으로 대체되고 상단에 그 사실이 표시됩니다 —
+    <b>해외에서 접속하면 조회가 차단</b>되어 이 상태가 됩니다.
   </p>
 
   <p class="disclaimer">
@@ -289,12 +290,26 @@
 </div>
 
 <script>
-  // ---- 보유종목 ----
-  // 1차: 공시 기반 자동 갱신본 (wypark73/china-semi-data/holdings.json)
-  // 2차: 아래 FALLBACK — 원격 로드·검증 실패 시에만 사용하며, 화면에 구버전임을 명시한다.
-  // secid 접두: 1 = 상하이(SSE), 0 = 선전(SZSE)
-  const HOLDINGS_URL =
-    'https://raw.githubusercontent.com/wypark73/china-semi-data/main/holdings.json';
+  // ---- 보유종목 (미래에셋 공시 자산구성 PDF를 브라우저가 직접 조회) ----
+  //
+  // 2026-07-28 확인된 사실:
+  //   · GitHub Actions 러너(미국 Azure)에서는 CloudFront가 예외 없이 403을 반환한다.
+  //     클라이언트(urllib/curl)·헤더·쿠키 조합 8가지를 시도했으나 전부 동일했다.
+  //   · 반면 이 서버는 access-control-allow-origin: * 를 보낸다.
+  //     즉 브라우저에서 교차 출처로 읽는 것은 허용되어 있고, 한국 내 브라우저에서 실증됐다.
+  //   → 수집 서버를 두지 않고 이 페이지가 직접 조회한다. 항상 최신이고 유지보수 지점이 없다.
+  //
+  // 주의 1: X-Requested-With 같은 커스텀 헤더를 추가하면 preflight(OPTIONS)가 발생하고
+  //         서버가 그것을 처리하지 않으면 CORS가 막힌다. Content-Type만 쓰는
+  //         '단순 요청(simple request)'을 반드시 유지할 것.
+  // 주의 2: 미국 등 해외에서 이 페이지를 열면 조회가 실패하고 아래 FALLBACK으로 떨어진다.
+  //
+  // secid 접두: 1 = 상하이(SSE, 코드 접미 C1), 0 = 선전(SZSE, 접미 C2)
+
+  const PDF_URL   = 'https://investments.miraeasset.com/tigeretf/ko/product/search/detail/pdfListAjax.ajax';
+  const KSD_FUND  = 'KR7396520009';
+  const WALK_BACK = 10;               // 휴장일을 판정하지 않고 데이터 유무로 확인한다
+  const MKT_MAP   = { C1: 1, C2: 0 };
 
   const FALLBACK_BASIS = '2026.07.19';
   const FALLBACK_HOLDINGS = [
@@ -346,56 +361,99 @@
     if (el) el.textContent = note;
   }
 
-  function fromFeed(j){
-    const out = [];
-    (j.holdings || []).forEach(h => {
-      const code = String(h.code || '');
-      const w    = Number(h.w);
-      if (!/^\d{6}$/.test(code)) return;
-      if (h.mkt !== 0 && h.mkt !== 1) return;
+  function pad2(n){ return n < 10 ? '0' + n : String(n); }
+  function fixDateOf(d){
+    return d.getFullYear() + '.' + pad2(d.getMonth() + 1) + '.' + pad2(d.getDate());
+  }
+
+  function fetchPdf(fixDate){
+    const body = 'ksdFund=' + KSD_FUND +
+                 '&pageIndex=1&firstIndex=0&listCnt=100' +
+                 '&fixDate=' + encodeURIComponent(fixDate) +
+                 '&prfPrd=Week01&order=SRD';
+    return fetch(PDF_URL, {
+      method : 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
+      body   : body,
+      cache  : 'no-store'
+    }).then(r => {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.text();
+    });
+  }
+
+  // 응답은 <tr> 조각의 나열이다.
+  // 셀 순서: [0] 종목코드 "688256 C1 EQUITY" / [1] 종목명 / [2] 수량 / [3] 평가금액 / [4] 비중 / [5] 등락
+  function parsePdf(fragment){
+    const doc  = new DOMParser().parseFromString('<table>' + fragment + '</table>', 'text/html');
+    const out  = [];
+    const unsupported = [];
+    let wsum = 0;
+
+    doc.querySelectorAll('tr').forEach(tr => {
+      const td = tr.querySelectorAll('td');
+      if (td.length < 5) return;
+
+      const w = parseFloat(String(td[4].textContent).replace(/[^0-9.]/g, ''));
       if (!isFinite(w) || w <= 0) return;
+      wsum += w;
+
+      const raw = String(td[0].textContent).replace(/\s+/g, ' ').trim();
+      const m   = raw.match(/^(\d{4,6})\s+([A-Z][A-Z0-9]{0,3})\s+EQUITY$/);
+      if (!m) return;                                   // 원화현금 등 비주식 행
+
+      const code = m[1], mkt = MKT_MAP[m[2]];
+      const en   = String(td[1].textContent).replace(/\s+/g, ' ').trim();
+
+      if (mkt === undefined || code.length !== 6){      // 홍콩 상장 등
+        unsupported.push({ code: code, suffix: m[2], w: w, en: en });
+        return;
+      }
+
       const nm = NAMES[code] || [];
       out.push({
-        rank : out.length + 1,
         code : code,
-        mkt  : h.mkt,
+        mkt  : mkt,
         w    : w,
-        en   : h.en || '',
-        kr   : nm[0] || h.en || code,
+        en   : en,
+        kr   : nm[0] || en || code,
         cn   : nm[1] || '',
         board: boardOf(code)
       });
     });
-    return out;
-  }
 
-  function daysSince(isoDate){
-    const t = Date.parse(isoDate + 'T00:00:00+09:00');
-    if (isNaN(t)) return null;
-    return Math.floor((Date.now() - t) / 86400000);
+    out.sort((a, b) => b.w - a.w);
+    out.forEach((h, i) => { h.rank = i + 1; });
+    return { list: out, unsupported: unsupported, wsum: Math.round(wsum * 100) / 100 };
   }
 
   function useFallback(reason){
     setHoldings(
       FALLBACK_HOLDINGS.map((h, i) => Object.assign({}, h, { rank: i + 1 })),
-      `396520 · 상위 10종목 · 구성비 기준 ${FALLBACK_BASIS} · ⚠ 자동 갱신 실패(${reason}), 구버전 목록`
+      `396520 · 상위 10종목 · 구성비 기준 ${FALLBACK_BASIS} · ⚠ 공시 조회 실패(${reason}), 구버전 목록`
     );
   }
 
-  function loadHoldings(){
-    return fetch(HOLDINGS_URL, { cache: 'no-store' })
-      .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
-      .then(j => {
-        const list = fromFeed(j);
-        if (list.length < 5) throw new Error('종목 ' + list.length + '건');
-        let note = `396520 · ${list.length}종목 · 구성비 기준 ${j.base_date}`;
-        const uns = (j.unsupported || []).length;
-        if (uns) note += ` · 미지원 거래소 ${uns}종목 제외`;
-        const age = daysSince(j.base_date);
-        if (age != null && age > 7) note += ` · ⚠ ${age}일 경과`;
-        setHoldings(list, note);
-      })
-      .catch(err => useFallback(String(err.message || err)));
+  async function loadHoldings(){
+    const today = new Date();
+    let lastErr = '데이터 없음';
+
+    for (let i = 0; i <= WALK_BACK; i++){
+      const ds = fixDateOf(new Date(today.getTime() - i * 86400000));
+      try {
+        const r = parsePdf(await fetchPdf(ds));
+        if (r.list.length >= 5){
+          let note = `396520 · ${r.list.length}종목 · 구성비 기준 ${ds}`;
+          if (r.unsupported.length) note += ` · 미지원 거래소 ${r.unsupported.length}종목 제외`;
+          if (r.wsum < 95)          note += ` · ⚠ 비중합 ${r.wsum}%`;
+          setHoldings(r.list, note);
+          return;
+        }
+      } catch (e){
+        lastErr = String(e.message || e);
+      }
+    }
+    useFallback(lastErr);
   }
 
   // ETF 396520 (KRX) 상태
