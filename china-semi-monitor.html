@@ -207,7 +207,7 @@
       <div class="brand">
         <p class="eyebrow">차이나 반도체 모니터</p>
         <h1>TIGER 차이나반도체FACTSET 보유종목</h1>
-        <div class="sub">396520 · 상위 10종목 · 구성비 기준 2026.07.19</div>
+        <div class="sub" id="basisSub">396520 · 구성종목 불러오는 중…</div>
       </div>
       <div class="controls">
         <label class="auto-toggle" title="30초마다 자동 새로고침">
@@ -242,7 +242,7 @@
       </div>
       <div class="cell">
         <div class="k">수신 종목</div>
-        <div class="v" id="okCount">0 / 10</div>
+        <div class="v" id="okCount">0 / —</div>
       </div>
       <div class="cell hide-sm">
         <div class="k">갱신 시각</div>
@@ -275,6 +275,12 @@
   </div>
 
   <p class="disclaimer">
+    <b>구성종목</b> 미래에셋자산운용이 공시하는 자산구성(PDF)을 매 영업일 수집해 자동 반영합니다.
+    수집 실패 시 마지막 성공본이 유지되며, 상단에 기준일과 경과일이 표시됩니다.
+    구성비는 1CU 기준이고 공시 자체가 하루 지연될 수 있습니다.
+  </p>
+
+  <p class="disclaimer">
     <b>데이터</b> 東方財富(Eastmoney) 공개 엔드포인트에서 자동 연동을 시도합니다. 브라우저 보안정책(CORS·CSP)이나
     거래소 데이터 제약으로 자동 수신이 막힐 수 있으며, 그럴 경우 해당 종목은 <b>실패</b>로 표시됩니다 —
     <b>현재가 칸을 클릭하면 값을 직접 입력</b>할 수 있고, 등락률·가중 추정치가 함께 갱신됩니다.
@@ -283,9 +289,15 @@
 </div>
 
 <script>
-  // ---- 보유종목 (구성비 2026.07.19 기준) ----
+  // ---- 보유종목 ----
+  // 1차: 공시 기반 자동 갱신본 (wypark73/china-semi-data/holdings.json)
+  // 2차: 아래 FALLBACK — 원격 로드·검증 실패 시에만 사용하며, 화면에 구버전임을 명시한다.
   // secid 접두: 1 = 상하이(SSE), 0 = 선전(SZSE)
-  const HOLDINGS = [
+  const HOLDINGS_URL =
+    'https://raw.githubusercontent.com/wypark73/china-semi-data/main/holdings.json';
+
+  const FALLBACK_BASIS = '2026.07.19';
+  const FALLBACK_HOLDINGS = [
     { rank:1,  kr:"캄브리콘",   en:"Cambricon",    cn:"寒武纪",   code:"688256", mkt:1, board:"커촹반",     w:10.10 },
     { rank:2,  kr:"기가디바이스", en:"GigaDevice",  cn:"兆易创新", code:"603986", mkt:1, board:"상하이 메인", w:9.86 },
     { rank:3,  kr:"중신궈지",   en:"SMIC",          cn:"中芯国际", code:"688981", mkt:1, board:"커촹반",  w:9.24 },
@@ -298,11 +310,93 @@
     { rank:10, kr:"퉈징커지",   en:"Piotech",       cn:"拓荆科技", code:"688072", mkt:1, board:"커촹반",     w:3.73 },
   ];
 
-  // 종목별 상태: { price, pct, amt, source: 'live'|'manual'|'fail'|null }
-  const state = HOLDINGS.map(() => ({ price:null, pct:null, amt:null, source:null }));
+  // 표시 전용 한글·중문명. 공시에는 영문명만 있으므로 여기서 보충한다.
+  // 사전에 없는 신규 편입 종목은 영문명 그대로 표시되며, 가중 계산에는 전혀 관여하지 않는다.
+  const NAMES = {
+    '688256':['캄브리콘','寒武纪'],     '603986':['기가디바이스','兆易创新'],
+    '688981':['중신궈지','中芯国际'],   '002371':['나우라','北方华创'],
+    '688041':['하이곤','海光信息'],     '688012':['중웨이','中微公司'],
+    '688008':['란치커지','澜起科技'],   '300604':['창촨커지','长川科技'],
+    '688120':['화하이칭커','华海清科'], '688072':['퉈징커지','拓荆科技'],
+    '600584':['장뎬커지','长电科技'],   '688062':['화훙반도체','华虹半导体'],
+    '002156':['퉁푸마이크로','通富微电'], '688525':['BIWIN','佰维存储'],
+    '603501':['웨이얼반도체','韦尔股份'], '300782':['줘성웨이','卓胜微'],
+    '688396':['화룬웨이','华润微'],     '002049':['쯔광궈웨이','紫光国微'],
+    '300661':['성방웨이','圣邦股份'],
+  };
+
+  function boardOf(code){
+    if (code.indexOf('688') === 0) return '커촹반';
+    if (code.indexOf('300') === 0) return '촹예반';
+    if (code.indexOf('00')  === 0) return '선전 메인';
+    return '상하이 메인';
+  }
 
   const $rows = document.getElementById('rows');
-  const secids = HOLDINGS.map(h => `${h.mkt}.${h.code}`).join(',');
+
+  let HOLDINGS = [];
+  let state    = [];
+  let secids   = '';
+
+  function setHoldings(list, note){
+    HOLDINGS = list;
+    state    = HOLDINGS.map(() => ({ price:null, pct:null, amt:null, source:null }));
+    secids   = HOLDINGS.map(h => `${h.mkt}.${h.code}`).join(',');
+    const el = document.getElementById('basisSub');
+    if (el) el.textContent = note;
+  }
+
+  function fromFeed(j){
+    const out = [];
+    (j.holdings || []).forEach(h => {
+      const code = String(h.code || '');
+      const w    = Number(h.w);
+      if (!/^\d{6}$/.test(code)) return;
+      if (h.mkt !== 0 && h.mkt !== 1) return;
+      if (!isFinite(w) || w <= 0) return;
+      const nm = NAMES[code] || [];
+      out.push({
+        rank : out.length + 1,
+        code : code,
+        mkt  : h.mkt,
+        w    : w,
+        en   : h.en || '',
+        kr   : nm[0] || h.en || code,
+        cn   : nm[1] || '',
+        board: boardOf(code)
+      });
+    });
+    return out;
+  }
+
+  function daysSince(isoDate){
+    const t = Date.parse(isoDate + 'T00:00:00+09:00');
+    if (isNaN(t)) return null;
+    return Math.floor((Date.now() - t) / 86400000);
+  }
+
+  function useFallback(reason){
+    setHoldings(
+      FALLBACK_HOLDINGS.map((h, i) => Object.assign({}, h, { rank: i + 1 })),
+      `396520 · 상위 10종목 · 구성비 기준 ${FALLBACK_BASIS} · ⚠ 자동 갱신 실패(${reason}), 구버전 목록`
+    );
+  }
+
+  function loadHoldings(){
+    return fetch(HOLDINGS_URL, { cache: 'no-store' })
+      .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+      .then(j => {
+        const list = fromFeed(j);
+        if (list.length < 5) throw new Error('종목 ' + list.length + '건');
+        let note = `396520 · ${list.length}종목 · 구성비 기준 ${j.base_date}`;
+        const uns = (j.unsupported || []).length;
+        if (uns) note += ` · 미지원 거래소 ${uns}종목 제외`;
+        const age = daysSince(j.base_date);
+        if (age != null && age > 7) note += ` · ⚠ ${age}일 경과`;
+        setHoldings(list, note);
+      })
+      .catch(err => useFallback(String(err.message || err)));
+  }
 
   // ETF 396520 (KRX) 상태
   const etf = { price:null, pct:null, amt:null, source:null };
@@ -501,8 +595,10 @@
   document.getElementById('autoChk').addEventListener('change', schedule);
   document.getElementById('refreshBtn').addEventListener('click', refresh);
 
-  render();
-  renderEtf();
-  refresh();
-  schedule();
+  loadHoldings().then(() => {
+    render();
+    renderEtf();
+    refresh();
+    schedule();
+  });
 </script>
