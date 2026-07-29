@@ -282,6 +282,12 @@
       </p>
 
   <p class="disclaimer">
+    <b>참고 종목</b> <b>미편입</b> 표시가 붙은 종목은 이 ETF와 기초지수에 포함되지 않습니다.
+    관련 종목의 장중 움직임을 함께 보기 위해 표시할 뿐이며, 위의 가중 등락 추정치와
+    수신 종목 집계에는 들어가지 않습니다.
+  </p>
+
+  <p class="disclaimer">
     <b>데이터</b> 東方財富(Eastmoney) 공개 엔드포인트에서 자동 연동을 시도합니다. 브라우저 보안정책(CORS·CSP)이나
     거래소 데이터 제약으로 자동 수신이 막힐 수 있으며, 그럴 경우 해당 종목은 <b>실패</b>로 표시됩니다 —
     <b>현재가 칸을 클릭하면 값을 직접 입력</b>할 수 있고, 등락률·가중 추정치가 함께 갱신됩니다.
@@ -339,6 +345,15 @@
     '300661':['성방웨이','圣邦股份'],
   };
 
+  // ---- 참고 종목 (ETF 미편입) ----
+  // ETF·기초지수 구성과 무관하다. 구성비를 0으로 두어 가중 등락 계산과
+  // '수신 종목' 집계에서 모두 제외되며, 화면에만 표시된다.
+  // 창신메모리(CXMT)는 2026-07-27 상하이거래소 커촹반 상장. 상장 직후라 미편입 상태다.
+  const EXTRAS = [
+    { kr:"창신메모리", en:"CXMT", cn:"长鑫存储", code:"688825", mkt:1,
+      board:"커촹반", w:0, extra:true },
+  ];
+
   function boardOf(code){
     if (code.indexOf('688') === 0) return '커촹반';
     if (code.indexOf('300') === 0) return '촹예반';
@@ -353,7 +368,8 @@
   let secids   = '';
 
   function setHoldings(list, note){
-    HOLDINGS = list;
+    // 참고 종목은 항상 목록 끝에 붙는다(조회 성공·실패 어느 쪽이든 동일).
+    HOLDINGS = list.concat(EXTRAS.map(e => Object.assign({}, e)));
     state    = HOLDINGS.map(() => ({ price:null, pct:null, amt:null, source:null }));
     secids   = HOLDINGS.map(h => `${h.mkt}.${h.code}`).join(',');
     const el = document.getElementById('basisSub');
@@ -506,11 +522,16 @@
       if (s.source==='manual') stat = '<span class="stat manual"><span class="d"></span>수동</span>';
       if (s.source==='fail')   stat = '<span class="stat fail"><span class="d"></span>수신 실패</span>';
 
+      const isExtra = !!h.extra;
+      const rankCell = isExtra ? '·' : h.rank;
+      const wtSm     = isExtra ? 'ETF 미편입' : `${h.w.toFixed(2)}%`;
+      const wtCell   = isExtra ? '<span class="tag">미편입</span>' : `${h.w.toFixed(2)}%`;
+
       tr.innerHTML =
-        `<td class="rank">${h.rank}</td>` +
-        `<td class="name-cell"><div class="name-kr">${h.kr} <span class="name-en">${h.en}</span></div><div class="name-cn">${h.cn}<span class="wt-sm">${h.w.toFixed(2)}%</span></div></td>` +
+        `<td class="rank">${rankCell}</td>` +
+        `<td class="name-cell"><div class="name-kr">${h.kr} <span class="name-en">${h.en}</span></div><div class="name-cn">${h.cn}<span class="wt-sm">${wtSm}</span></div></td>` +
         `<td class="code hide-sm">${h.code}<br><span class="tag">${h.board}</span></td>` +
-        `<td class="weight hide-sm">${h.w.toFixed(2)}%</td>` +
+        `<td class="weight hide-sm">${wtCell}</td>` +
         `<td>${priceCell}</td>` +
         `<td>${chgHtml}</td>` +
         `<td class="hide-sm" style="text-align:left">${stat}</td>`;
@@ -521,12 +542,16 @@
   }
 
   function updateSummary(){
-    const ok = state.filter(s => s.source==='live' || s.source==='manual').length;
-    document.getElementById('okCount').textContent = `${ok} / ${HOLDINGS.length}`;
+    // 참고 종목(ETF 미편입)은 수신 집계와 가중 계산 양쪽에서 제외한다.
+    const idx = [];
+    HOLDINGS.forEach((h,i)=>{ if(!h.extra) idx.push(i); });
+
+    const ok = idx.filter(i => state[i].source==='live' || state[i].source==='manual').length;
+    document.getElementById('okCount').textContent = `${ok} / ${idx.length}`;
 
     // 가중 등락: 값이 있는 종목의 구성비로 정규화
     let wsum=0, acc=0;
-    state.forEach((s,i)=>{ if(s.pct!=null){ wsum+=HOLDINGS[i].w; acc+=HOLDINGS[i].w*s.pct; } });
+    idx.forEach(i=>{ const s=state[i]; if(s.pct!=null){ wsum+=HOLDINGS[i].w; acc+=HOLDINGS[i].w*s.pct; } });
     const el = document.getElementById('weightedChg');
     if (wsum>0){
       const v = acc/wsum;
