@@ -1,10 +1,1 @@
-[
-  {
-    "code": "MUNGER_EXECUTED",
-    "level": "INFO",
-    "title": "Munger 2단계 집행 확인됨",
-    "body": "확인일 2026-07-29",
-    "ack_key": null,
-    "edge": true
-  }
-]
+[]

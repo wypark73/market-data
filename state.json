@@ -1,12 +1,12 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-07-29T18:25:20.764388+09:00",
-  "run_slot": "A",
+  "updated_at": "2026-07-30T07:33:28.341036+09:00",
+  "run_slot": "B",
   "data_freshness": {
-    "data_json_updated_at": "2026-07-29T18:25:03.458495+09:00",
+    "data_json_updated_at": "2026-07-30T07:33:05.275823+09:00",
     "kospi200_last_date": "2026-07-29",
-    "sp500_last_date": "2026-07-28",
-    "hy_oas_last_date": "2026-07-27",
+    "sp500_last_date": "2026-07-29",
+    "hy_oas_last_date": "2026-07-28",
     "stale": false,
     "intraday_risk": false
   },
@@ -33,9 +33,11 @@
       },
       {
         "stage": 2,
-        "date": "2026-07-29",
-        "close": 887.2,
-        "dd_pct": -39.94
+        "date": "2026-07-28",
+        "close": 945.69,
+        "dd_pct": -35.98,
+        "note": "발동 시점 종가 기준 · ACK 2026-07-29 (2026-07-29 수동 정정: 종전 기록은 ACK 시점 종가 887.2/-39.94 였음)",
+        "acked_at": "2026-07-29"
       }
     ],
     "next_trigger": {
@@ -59,7 +61,7 @@
   },
   "gate": {
     "status": "open",
-    "usdkrw": 1451.09,
+    "usdkrw": 1443.78,
     "usdkrw_leg": false,
     "cds_leg": false,
     "cds_check_required": false,
@@ -82,8 +84,8 @@
       "date": "2026-07-29",
       "close": 887.2,
       "intraday_risk": false,
-      "observed_at": "2026-07-29T18:25:20.764388+09:00",
-      "run_slot": "A"
+      "observed_at": "2026-07-30T07:33:28.341036+09:00",
+      "run_slot": "B"
     }
   },
   "alerts_fired": {
@@ -93,7 +95,7 @@
     "CPI_SERIES_MISMATCH": null,
     "DATA_STALE": null,
     "WINDOW_D30": null,
-    "USDKRW_WARN": "2026-07-29",
+    "USDKRW_WARN": null,
     "HY_OAS_WARN": null,
     "CPI_NEAR": null,
     "ATH_STALE": null,
@@ -101,7 +103,7 @@
     "INFL_COUNT_CHANGE": null,
     "HEARTBEAT": null,
     "CLOSE_REVISED": null,
-    "MUNGER_EXECUTED": "2026-07-29"
+    "MUNGER_EXECUTED": null
   },
   "pending_ack": []
 }
