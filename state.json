@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-07-29T07:37:40.154728+09:00",
-  "run_slot": "B",
+  "updated_at": "2026-07-29T18:25:20.764388+09:00",
+  "run_slot": "A",
   "data_freshness": {
-    "data_json_updated_at": "2026-07-29T07:37:20.989741+09:00",
-    "kospi200_last_date": "2026-07-28",
+    "data_json_updated_at": "2026-07-29T18:25:03.458495+09:00",
+    "kospi200_last_date": "2026-07-29",
     "sp500_last_date": "2026-07-28",
     "hy_oas_last_date": "2026-07-27",
     "stale": false,
@@ -21,8 +21,8 @@
     "promotion_gate_pass": false
   },
   "munger": {
-    "stage": 1,
-    "overweight_pp": 1.5,
+    "stage": 2,
+    "overweight_pp": 3.0,
     "history": [
       {
         "stage": 1,
@@ -30,14 +30,20 @@
         "close": 1158.37,
         "dd_pct": -21.58,
         "note": "고정 델타 실행 완료: KOSPI200 +1.5%p / 한국채·미국채 각 -0.75%p"
+      },
+      {
+        "stage": 2,
+        "date": "2026-07-29",
+        "close": 887.2,
+        "dd_pct": -39.94
       }
     ],
     "next_trigger": {
-      "stage": 2,
-      "level": 960.19,
-      "dd_pct": -35.0
+      "stage": 3,
+      "level": 738.61,
+      "dd_pct": -50.0
     },
-    "dist_to_next_pp": 0.98,
+    "dist_to_next_pp": 10.06,
     "buy_gate_open": true
   },
   "inflation": {
@@ -53,7 +59,7 @@
   },
   "gate": {
     "status": "open",
-    "usdkrw": 1453.74,
+    "usdkrw": 1451.09,
     "usdkrw_leg": false,
     "cds_leg": false,
     "cds_check_required": false,
@@ -73,15 +79,15 @@
   },
   "last_seen": {
     "kospi200": {
-      "date": "2026-07-28",
-      "close": 945.69,
+      "date": "2026-07-29",
+      "close": 887.2,
       "intraday_risk": false,
-      "observed_at": "2026-07-29T07:37:40.154728+09:00",
-      "run_slot": "B"
+      "observed_at": "2026-07-29T18:25:20.764388+09:00",
+      "run_slot": "A"
     }
   },
   "alerts_fired": {
-    "MUNGER_TRIGGER": "2026-07-29",
+    "MUNGER_TRIGGER": null,
     "MUNGER_NEAR": null,
     "GATE_CDS_CHECK": null,
     "CPI_SERIES_MISMATCH": null,
@@ -94,13 +100,8 @@
     "MODE_DRIFT": null,
     "INFL_COUNT_CHANGE": null,
     "HEARTBEAT": null,
-    "CLOSE_REVISED": null
+    "CLOSE_REVISED": null,
+    "MUNGER_EXECUTED": "2026-07-29"
   },
-  "pending_ack": [
-    {
-      "code": "MUNGER_TRIGGER:2",
-      "raised_at": "2026-07-28",
-      "detail": "Munger 2단계 트리거 도달"
-    }
-  ]
+  "pending_ack": []
 }
