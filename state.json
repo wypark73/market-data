@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-08-01T07:37:02.059956+09:00",
-  "run_slot": "B",
+  "updated_at": "2026-08-01T17:55:45.828981+09:00",
+  "run_slot": "A",
   "data_freshness": {
-    "data_json_updated_at": "2026-08-01T07:36:44.068990+09:00",
+    "data_json_updated_at": "2026-08-01T17:55:30.858774+09:00",
     "kospi200_last_date": "2026-07-31",
     "sp500_last_date": "2026-07-31",
     "hy_oas_last_date": "2026-07-30",
@@ -61,7 +61,7 @@
   },
   "gate": {
     "status": "open",
-    "usdkrw": 1442.0699,
+    "usdkrw": 1436.6,
     "usdkrw_leg": false,
     "cds_leg": false,
     "cds_check_required": false,
@@ -84,8 +84,8 @@
       "date": "2026-07-31",
       "close": 1046.81,
       "intraday_risk": false,
-      "observed_at": "2026-08-01T07:37:02.059956+09:00",
-      "run_slot": "B"
+      "observed_at": "2026-08-01T17:55:45.828981+09:00",
+      "run_slot": "A"
     }
   },
   "alerts_fired": {
