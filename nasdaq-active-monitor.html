@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TIME 미국나스닥100액티브(426030) 모니터</title>
+<style>
+  :root{
+    --bg:#0a0e13;
+    --panel:#11161d;
+    --panel2:#161d26;
+    --line:#232b36;
+    --text:#e7ecf2;
+    --muted:#7c8a9a;
+    --up:#3fb27f;
+    --down:#e2574c;
+    --amber:#d9a441;
+    --amber-dim:#8a6a2a;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Pretendard,"Noto Sans KR",sans-serif;}
+  .num{font-family:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;font-variant-numeric:tabular-nums;}
+
+  /* ticker tape — signature element */
+  .tape-wrap{position:sticky;top:0;z-index:20;background:#000;border-bottom:1px solid var(--line);overflow:hidden;white-space:nowrap;}
+  .tape{display:inline-block;padding:7px 0;animation:scroll 38s linear infinite;}
+  .tape span{display:inline-block;padding:0 22px;font-size:13px;letter-spacing:.02em;}
+  .tape .tk{color:var(--amber);font-weight:700;margin-right:6px;}
+  .tape .up{color:var(--up);}
+  .tape .down{color:var(--down);}
+  @keyframes scroll{from{transform:translateX(0);}to{transform:translateX(-50%);}}
+  @media (prefers-reduced-motion: reduce){.tape{animation:none;}}
+
+  header{padding:20px 16px 6px;max-width:920px;margin:0 auto;}
+  .eyebrow{color:var(--amber);font-size:12px;letter-spacing:.14em;text-transform:uppercase;font-weight:700;}
+  h1{margin:6px 0 2px;font-size:22px;line-height:1.3;}
+  h1 .code{color:var(--muted);font-weight:400;font-size:16px;}
+  .sub{color:var(--muted);font-size:13px;margin-bottom:2px;}
+
+  main{max-width:920px;margin:0 auto;padding:8px 16px 40px;}
+
+  .tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:16px 0;}
+  .tile{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px;}
+  .tile .label{color:var(--muted);font-size:11.5px;margin-bottom:6px;}
+  .tile .val{font-size:19px;font-weight:700;}
+  .tile .foot{color:var(--muted);font-size:11px;margin-top:5px;}
+  @media (max-width:560px){.tiles{grid-template-columns:1fr 1fr;} .tiles .tile:first-child{grid-column:1/-1;}}
+
+  .section-head{display:flex;align-items:baseline;justify-content:space-between;margin:26px 0 8px;flex-wrap:wrap;gap:6px;}
+  .section-head h2{font-size:15px;margin:0;}
+  .section-head .meta{color:var(--muted);font-size:12px;}
+
+  .banner{background:#1c1408;border:1px solid var(--amber-dim);color:#e8c988;border-radius:8px;
+    padding:10px 12px;font-size:12.5px;line-height:1.55;margin-bottom:14px;}
+  .banner b{color:var(--amber);}
+  .banner.err{background:#1c0f0e;border-color:#5c2a26;color:#f0b3ae;}
+  .banner.err b{color:var(--down);}
+
+  table{width:100%;border-collapse:collapse;background:var(--panel);border:1px solid var(--line);border-radius:10px;overflow:hidden;}
+  thead th{position:sticky;top:38px;background:var(--panel2);text-align:right;font-size:11px;color:var(--muted);
+    font-weight:600;padding:9px 10px;border-bottom:1px solid var(--line);white-space:nowrap;}
+  thead th:first-child,thead th:nth-child(2){text-align:left;}
+  tbody td{padding:9px 10px;border-bottom:1px solid var(--line);text-align:right;font-size:13.5px;white-space:nowrap;}
+  tbody td:first-child,tbody td:nth-child(2){text-align:left;}
+  tbody tr:last-child td{border-bottom:none;}
+  tbody tr:hover{background:#141a22;}
+  .name{font-weight:600;}
+  .name .en{display:block;color:var(--muted);font-weight:400;font-size:11.5px;}
+  .rank{color:var(--muted);width:22px;}
+  .wbadge{display:inline-block;background:#20242c;color:var(--amber);border-radius:5px;padding:1px 6px;font-size:11.5px;}
+  .up{color:var(--up);}
+  .down{color:var(--down);}
+  .flat{color:var(--muted);}
+  .status{font-size:11px;}
+  .status.ok{color:var(--up);}
+  .status.fail{color:var(--down);cursor:pointer;text-decoration:underline dotted;}
+  .status.stale{color:var(--muted);}
+  .status.manual{color:var(--amber);cursor:pointer;text-decoration:underline dotted;}
+
+  @media (max-width:640px){
+    .col-en{display:none;}
+    thead th:nth-child(4),tbody td:nth-child(4){display:none;} /* 티커 열 숨김, 이름 아래 표기 */
+  }
+
+  .controls{display:flex;align-items:center;gap:14px;margin-top:14px;flex-wrap:wrap;font-size:12.5px;color:var(--muted);}
+  .controls label{display:flex;align-items:center;gap:5px;}
+  button.refresh{background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:7px;
+    padding:6px 12px;font-size:12.5px;cursor:pointer;}
+  button.refresh:hover{border-color:var(--amber-dim);}
+
+  footer{max-width:920px;margin:30px auto 0;padding:16px;color:var(--muted);font-size:11.5px;line-height:1.7;
+    border-top:1px solid var(--line);}
+  footer a{color:#9fb6c9;}
+  footer .warn{color:#e8c988;}
+</style>
+</head>
+<body>
+
+<div class="tape-wrap"><div class="tape" id="tape">
+  <span>시세 불러오는 중…</span><span>시세 불러오는 중…</span>
+</div></div>
+
+<header>
+  <div class="eyebrow">TIME ACTIVE ETF · TimeFolio</div>
+  <h1>TIME 미국나스닥100액티브 <span class="code">426030</span></h1>
+  <div class="sub">구성종목 TOP 10 모니터 · 비교지수: NASDAQ 100 Index(KRW)</div>
+</header>
+
+<main>
+
+  <div class="tiles">
+    <div class="tile">
+      <div class="label">기준가 (자사 산출)</div>
+      <div class="val num">44,308.69원</div>
+      <div class="foot">2026.08.03 기준 · 공식 페이지 값, 자동 갱신 안 됨</div>
+    </div>
+    <div class="tile">
+      <div class="label">시장가 (KRX 종가)</div>
+      <div class="val num">44,950.00원 <span class="down num" style="font-size:13px;">-1.72%</span></div>
+      <div class="foot">2026.08.03 기준</div>
+    </div>
+    <div class="tile">
+      <div class="label">TOP10 가중 등락(당일)</div>
+      <div class="val num" id="tileApprox">—</div>
+      <div class="foot" id="tileApproxFoot">시세 수신 시도 중…</div>
+    </div>
+  </div>
+
+  <div class="banner">
+    <b>이 페이지가 자동으로 하는 일과 하지 않는 일</b><br>
+    · 구성종목 TOP 10(비중 합 44.19%, 2026.08.03 공시 기준)의 미국 주식 시세만 브라우저에서 직접 수신을 <b>시도</b>합니다.<br>
+    · 426030 자체의 KRX 기준가·시장가는 자동 수신하지 않습니다 — 국내 ETF 실시간 시세는 브라우저에서 CORS로 막히는 경우가 많다는 것이 이전 프로젝트(TIGER 396520)에서 이미 확인된 사실이라, 여기서는 처음부터 수동 갱신으로 설계했습니다.<br>
+    · 아래 표의 "TOP10 가중 등락"은 <b>펀드 전체 수익률의 근사치가 아니라 상위 10종목(44.19%)만의 가중 평균</b>이고, 원화환산(환율) 효과도 반영하지 않은 <b>현지 통화(USD) 기준</b> 수치입니다.
+  </div>
+
+  <div class="section-head">
+    <h2>구성종목 TOP 10</h2>
+    <div class="meta">기준일 2026.08.03 · 출처 <a href="https://timeetf.co.kr/m11_view.php?idx=2" style="color:#9fb6c9;">timeetf.co.kr</a></div>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>종목명</th>
+        <th>비중</th>
+        <th>티커</th>
+        <th>현재가</th>
+        <th>등락%</th>
+        <th>상태</th>
+      </tr>
+    </thead>
+    <tbody id="holdingsBody"><!-- JS로 렌더 --></tbody>
+  </table>
+
+  <div class="controls">
+    <button class="refresh" id="btnRefresh">지금 새로고침</button>
+    <label><input type="checkbox" id="autoRefresh"> 60초마다 자동 새로고침</label>
+    <span id="lastUpdated">아직 수신 시도 전</span>
+    <span id="marketStatus"></span>
+  </div>
+
+  <div class="section-head">
+    <h2>시세 자동 수신 — 무엇을, 왜 이렇게</h2>
+  </div>
+  <div class="banner" id="sourceBanner">
+    1순위 Stooq(stooq.com) 일별 종가 → 실패 시 2순위 Yahoo Finance chart API로 폴백합니다. 두 경로 모두 <b>이 페이지를 실제 브라우저에 배포해 열기 전까지는 CORS 허용 여부가 확인되지 않았습니다.</b>
+    자동 수신이 전부 실패로 뜨면 CORS 차단으로 추정되는 것이지 코드 오류가 아닐 가능성이 높습니다 — 그 경우 "실패" 배지를 눌러 값을 직접 입력할 수 있습니다(새로고침하면 사라지는 임시 입력).
+  </div>
+
+</main>
+
+<footer>
+  <div><b style="color:#c7d2db;">데이터 출처</b> — 구성종목·비중: TimeFolio TIME ETF 공식 페이지(timeetf.co.kr, 2026.08.03 기준 TOP10). 기준가·시장가: 동일 페이지 기준가격 표(2026.08.03). 개별 종목 시세: Stooq / Yahoo Finance(자동, 브라우저 CORS 통과 시에만).</div>
+  <div style="margin-top:6px;"><span class="warn">한계</span> — ① 공식 페이지의 "구성종목" 전체 목록(약 100종목 이상, 더보기 11페이지)은 이 페이지에 반영되지 않았고 TOP10만 표시합니다. ② TOP10 비중 합 44.19%로, TIGER 차이나반도체 모니터(TOP 21종목이 사실상 전량)와 달리 이 근사치는 펀드 전체를 대표하지 못합니다. ③ 미국 정규장은 KST 기준 대략 22:30~05:00(서머타임 시) / 23:30~06:00(표준시)이며 이 페이지의 개장 판정은 서머타임 경계일을 정확히 계산하지 않은 근사치입니다. ④ 수동 입력값은 저장되지 않고 새로고침 시 초기화됩니다.</div>
+  <div style="margin-top:6px;">최초 생성 2026.08.04 · 자동 시세 수신은 실제 배포 후 동작 확인이 필요합니다(이전 china-semi-monitor.html도 같은 방식으로 배포 후 검증했습니다).</div>
+</footer>
+
+<script>
+(function(){
+  "use strict";
+
+  // 종목명(국문/영문), 티커, 비중 — timeetf.co.kr 2026.08.03 기준 TOP10 공시
+  const HOLDINGS = [
+    {rank:1,  ko:"샌디스크",        en:"Sandisk Corp",                         ticker:"SNDK", weight:6.48},
+    {rank:2,  ko:"인텔",           en:"Intel Corp",                            ticker:"INTC", weight:5.16},
+    {rank:3,  ko:"마이크론 테크놀로지", en:"Micron Technology Inc",                ticker:"MU",   weight:4.80},
+    {rank:4,  ko:"램 리서치",       en:"Lam Research Corp",                     ticker:"LRCX", weight:4.63},
+    {rank:5,  ko:"델 테크놀로지스",  en:"Dell Technologies Inc",                 ticker:"DELL", weight:4.52},
+    {rank:6,  ko:"엔비디아",        en:"NVIDIA Corp",                           ticker:"NVDA", weight:4.52},
+    {rank:7,  ko:"AMD",           en:"Advanced Micro Devices Inc",             ticker:"AMD",  weight:4.17},
+    {rank:8,  ko:"웨스턴 디지털",    en:"Western Digital Corp",                  ticker:"WDC",  weight:3.34},
+    {rank:9,  ko:"마벨 테크놀로지",  en:"Marvell Technology Inc",                ticker:"MRVL", weight:3.33},
+    {rank:10, ko:"크레도 테크놀로지", en:"Credo Technology Group Holding Ltd",    ticker:"CRDO", weight:3.24},
+  ];
+  const TOP10_WEIGHT_SUM = HOLDINGS.reduce((s,h)=>s+h.weight,0); // 44.19
+
+  const state = {}; // ticker -> {price, pct, status: 'ok'|'fail'|'stale', source}
+  HOLDINGS.forEach(h=> state[h.ticker] = {price:null, pct:null, status:'pending', source:null});
+
+  function fmtPct(p){
+    if(p===null||p===undefined||isNaN(p)) return "—";
+    const s = p>0?"+":"";
+    return s+p.toFixed(2)+"%";
+  }
+  function pctClass(p){
+    if(p===null||p===undefined||isNaN(p)) return "flat";
+    if(p>0.005) return "up";
+    if(p<-0.005) return "down";
+    return "flat";
+  }
+
+  async function fetchWithTimeout(url, ms){
+    const ctrl = new AbortController();
+    const t = setTimeout(()=>ctrl.abort(), ms);
+    try{
+      const res = await fetch(url, {signal: ctrl.signal});
+      clearTimeout(t);
+      if(!res.ok) throw new Error("HTTP "+res.status);
+      return res;
+    }catch(e){
+      clearTimeout(t);
+      throw e;
+    }
+  }
+
+  // 1순위: Stooq 일별 종가 CSV (최근 10일 범위 → 마지막 2개 종가로 등락 계산)
+  async function fetchStooq(ticker){
+    const d2 = new Date();
+    const d1 = new Date(d2.getTime() - 10*24*3600*1000);
+    const fmt = d => d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0');
+    const url = `https://stooq.com/q/d/l/?s=${ticker.toLowerCase()}.us&d1=${fmt(d1)}&d2=${fmt(d2)}&i=d`;
+    const res = await fetchWithTimeout(url, 6000);
+    const text = await res.text();
+    const lines = text.trim().split("\n").filter(l=>l && !l.startsWith("<"));
+    if(lines.length < 3) throw new Error("insufficient rows");
+    const rows = lines.slice(1).map(l=>l.split(","));
+    const last = rows[rows.length-1];
+    const prev = rows[rows.length-2];
+    const lastClose = parseFloat(last[4]);
+    const prevClose = parseFloat(prev[4]);
+    if(!isFinite(lastClose) || !isFinite(prevClose) || prevClose===0) throw new Error("parse fail");
+    return { price: lastClose, pct: (lastClose-prevClose)/prevClose*100, date: last[0], source:"stooq" };
+  }
+
+  // 2순위: Yahoo Finance chart API 폴백
+  async function fetchYahoo(ticker){
+    const url = `https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?range=5d&interval=1d`;
+    const res = await fetchWithTimeout(url, 6000);
+    const json = await res.json();
+    const result = json?.chart?.result?.[0];
+    const closes = result?.indicators?.quote?.[0]?.close?.filter(v=>v!==null);
+    if(!closes || closes.length < 2) throw new Error("no data");
+    const lastClose = closes[closes.length-1];
+    const prevClose = closes[closes.length-2];
+    return { price:lastClose, pct:(lastClose-prevClose)/prevClose*100, date:null, source:"yahoo" };
+  }
+
+  async function fetchOne(ticker){
+    try{
+      const r = await fetchStooq(ticker);
+      return {...r, status:'ok'};
+    }catch(e1){
+      try{
+        const r = await fetchYahoo(ticker);
+        return {...r, status:'ok'};
+      }catch(e2){
+        return {status:'fail', error:(e1?.message||'')+' / '+(e2?.message||'')};
+      }
+    }
+  }
+
+  function marketStatusText(){
+    const now = new Date();
+    // KST = UTC+9
+    const kst = new Date(now.getTime() + (9*60 - now.getTimezoneOffset())*60000);
+    const h = kst.getHours(), m = kst.getMinutes();
+    const mins = h*60+m;
+    // 서머타임 근사: 4~10월 = EDT(22:30~05:00 KST), 그 외 = EST(23:30~06:00 KST)
+    const isEDTseason = (kst.getMonth()+1) >= 4 && (kst.getMonth()+1) <= 10;
+    const openStart = isEDTseason ? 22*60+30 : 23*60+30;
+    const openEndNextDay = isEDTseason ? 5*60 : 6*60;
+    const open = (mins >= openStart) || (mins < openEndNextDay);
+    return open ? "🟢 미국 정규장 개장 중(근사)" : "⚪ 미국 정규장 폐장(근사) — 마지막 종가 기준";
+  }
+
+  function renderTable(){
+    const body = document.getElementById("holdingsBody");
+    body.innerHTML = "";
+    HOLDINGS.forEach(h=>{
+      const s = state[h.ticker];
+      const tr = document.createElement("tr");
+      const priceTxt = s.price!=null ? ("$"+s.price.toFixed(2)) : "—";
+      let statusHtml;
+      if(s.status==='ok') statusHtml = `<span class="status ok">수신 완료${s.manual?'(수동)':''}</span>`;
+      else if(s.status==='fail') statusHtml = `<span class="status fail" data-ticker="${h.ticker}" title="클릭해 값 직접 입력">수신 실패 — 입력</span>`;
+      else statusHtml = `<span class="status stale">대기</span>`;
+
+      tr.innerHTML = `
+        <td class="rank num">${h.rank}</td>
+        <td class="name">${h.ko}<span class="en col-en">${h.en}</span></td>
+        <td class="num"><span class="wbadge">${h.weight.toFixed(2)}%</span></td>
+        <td class="num">${h.ticker}</td>
+        <td class="num">${priceTxt}</td>
+        <td class="num ${pctClass(s.pct)}">${fmtPct(s.pct)}</td>
+        <td>${statusHtml}</td>
+      `;
+      body.appendChild(tr);
+    });
+
+    // 수신 실패 배지 클릭 → 수동 입력
+    body.querySelectorAll(".status.fail").forEach(el=>{
+      el.addEventListener("click", ()=>{
+        const ticker = el.getAttribute("data-ticker");
+        const v = prompt(ticker+"의 당일 등락률(%)을 직접 입력하세요. 예: -1.25");
+        if(v===null || v.trim()==="") return;
+        const num = parseFloat(v);
+        if(isNaN(num)){ alert("숫자로 입력해 주세요."); return; }
+        state[ticker].pct = num;
+        state[ticker].status = 'ok';
+        state[ticker].manual = true;
+        renderTable();
+        updateSummary();
+      });
+    });
+  }
+
+  function updateSummary(){
+    let weightedSum = 0, coveredWeight = 0, okCount=0, failCount=0;
+    HOLDINGS.forEach(h=>{
+      const s = state[h.ticker];
+      if(s.status==='ok' && s.pct!=null){
+        weightedSum += h.weight * s.pct;
+        coveredWeight += h.weight;
+        okCount++;
+      } else if(s.status==='fail'){
+        failCount++;
+      }
+    });
+    const tile = document.getElementById("tileApprox");
+    const foot = document.getElementById("tileApproxFoot");
+    if(coveredWeight>0){
+      const approx = weightedSum / coveredWeight; // 수신된 종목 비중 기준 가중평균
+      tile.textContent = fmtPct(approx);
+      tile.className = "val num "+pctClass(approx);
+      foot.textContent = `${okCount}/${HOLDINGS.length}종목 수신 · 커버 비중 ${coveredWeight.toFixed(2)}%p / TOP10 전체 ${TOP10_WEIGHT_SUM.toFixed(2)}%p (펀드 전체 아님)`;
+    } else {
+      tile.textContent = "—";
+      tile.className = "val num";
+      foot.textContent = failCount===HOLDINGS.length ? "전 종목 수신 실패 — CORS 차단 추정, 배지 클릭해 수동 입력" : "시세 수신 시도 중…";
+    }
+
+    // 티커 테이프 갱신
+    const tape = document.getElementById("tape");
+    const items = HOLDINGS.map(h=>{
+      const s = state[h.ticker];
+      const cls = pctClass(s.pct);
+      const txt = s.status==='ok' ? fmtPct(s.pct) : (s.status==='fail'?'—':'…');
+      return `<span><span class="tk">${h.ticker}</span><span class="${cls}">${txt}</span></span>`;
+    }).join("");
+    tape.innerHTML = items + items; // 무한 스크롤을 위해 두 번 반복
+
+    document.getElementById("marketStatus").textContent = marketStatusText();
+  }
+
+  async function refreshAll(){
+    document.getElementById("lastUpdated").textContent = "수신 중…";
+    HOLDINGS.forEach(h=>{ if(!state[h.ticker].manual){ state[h.ticker].status='pending'; } });
+    renderTable();
+
+    const results = await Promise.allSettled(HOLDINGS.map(h=>fetchOne(h.ticker)));
+    results.forEach((r, i)=>{
+      const h = HOLDINGS[i];
+      if(state[h.ticker].manual) return; // 수동 입력값은 자동 갱신으로 덮지 않음
+      if(r.status==='fulfilled' && r.value.status==='ok'){
+        state[h.ticker] = {...r.value};
+      } else {
+        state[h.ticker] = {status:'fail', price:state[h.ticker].price, pct:null};
+      }
+    });
+
+    renderTable();
+    updateSummary();
+    const now = new Date();
+    document.getElementById("lastUpdated").textContent = "마지막 수신 시도: "+now.toLocaleTimeString("ko-KR");
+  }
+
+  document.getElementById("btnRefresh").addEventListener("click", refreshAll);
+  let timer = null;
+  document.getElementById("autoRefresh").addEventListener("change", (e)=>{
+    if(e.target.checked){ timer = setInterval(refreshAll, 60000); }
+    else if(timer){ clearInterval(timer); timer=null; }
+  });
+
+  renderTable();
+  updateSummary();
+  refreshAll();
+})();
+</script>
+
+</body>
+</html>
