@@ -127,9 +127,22 @@
     </div>
   </div>
 
+  <div class="banner" id="keyBanner">
+    <b>Finnhub API 키 설정 (최초 1회)</b><br>
+    Stooq·Yahoo Finance는 브라우저 CORS로 막힌 것이 확인됐습니다. Finnhub는 클라이언트 측 사용을 위해 CORS를 허용한다는 문서가 있으나<b> 이 페이지에서 실제로 통과하는지는 아직 확인 전</b>입니다.<br>
+    ① <a href="https://finnhub.io/register" style="color:#f0d9a0;">finnhub.io/register</a>에서 무료 가입(카드 불필요) → 대시보드에서 API 키 복사 → 아래에 붙여넣고 저장하세요.<br>
+    ② 키는 <b>이 브라우저의 로컬 저장소에만</b> 저장되며, 페이지 소스나 GitHub 저장소에는 남지 않습니다. 무료 티어는 분당 60회 호출로 종목 10개 새로고침에는 충분합니다.
+    <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+      <input type="password" id="finnhubKeyInput" placeholder="Finnhub API 키 붙여넣기"
+        style="background:#0d1218;border:1px solid var(--line);color:var(--text);border-radius:6px;padding:6px 10px;font-size:12.5px;min-width:220px;">
+      <button class="refresh" id="btnSaveKey">저장</button>
+      <span id="keyStatus" class="foot"></span>
+    </div>
+  </div>
+
   <div class="banner">
     <b>이 페이지가 자동으로 하는 일과 하지 않는 일</b><br>
-    · 구성종목 TOP 10(비중 합 44.19%, 2026.08.03 공시 기준)의 미국 주식 시세만 브라우저에서 직접 수신을 <b>시도</b>합니다.<br>
+    · 구성종목 TOP 10(비중 합 44.19%, 2026.08.03 공시 기준)의 미국 주식 시세만 브라우저에서 직접 수신을 <b>시도</b>합니다(1순위 Finnhub → 2순위 Stooq → 3순위 Yahoo, 뒤 둘은 이미 CORS 차단 확인됨).<br>
     · 426030 자체의 KRX 기준가·시장가는 자동 수신하지 않습니다 — 국내 ETF 실시간 시세는 브라우저에서 CORS로 막히는 경우가 많다는 것이 이전 프로젝트(TIGER 396520)에서 이미 확인된 사실이라, 여기서는 처음부터 수동 갱신으로 설계했습니다.<br>
     · 아래 표의 "TOP10 가중 등락"은 <b>펀드 전체 수익률의 근사치가 아니라 상위 10종목(44.19%)만의 가중 평균</b>이고, 원화환산(환율) 효과도 반영하지 않은 <b>현지 통화(USD) 기준</b> 수치입니다.
   </div>
@@ -165,14 +178,15 @@
     <h2>시세 자동 수신 — 무엇을, 왜 이렇게</h2>
   </div>
   <div class="banner" id="sourceBanner">
-    1순위 Stooq(stooq.com) 일별 종가 → 실패 시 2순위 Yahoo Finance chart API로 폴백합니다. 두 경로 모두 <b>이 페이지를 실제 브라우저에 배포해 열기 전까지는 CORS 허용 여부가 확인되지 않았습니다.</b>
-    자동 수신이 전부 실패로 뜨면 CORS 차단으로 추정되는 것이지 코드 오류가 아닐 가능성이 높습니다 — 그 경우 "실패" 배지를 눌러 값을 직접 입력할 수 있습니다(새로고침하면 사라지는 임시 입력).
+    <b>확인된 사실</b>: Stooq(stooq.com)·Yahoo Finance(query1.finance.yahoo.com) 모두 이 페이지(origin: github.io)에서 <code>Access-Control-Allow-Origin</code> 헤더 없음 — 브라우저 콘솔에서 CORS 차단 직접 확인됨(2026.08.04).<br>
+    <b>미확인</b>: Finnhub(finnhub.io)가 이 페이지에서 CORS를 통과하는지는 실제 배포 후 확인이 필요합니다. 위에 키를 저장한 뒤 새로고침해 결과를 봐 주세요.<br>
+    Finnhub도 막히면 종목별로 "실패" 배지를 눌러 값을 직접 입력할 수 있습니다(새로고침하면 사라지는 임시 입력, 저장되지 않음).
   </div>
 
 </main>
 
 <footer>
-  <div><b style="color:#c7d2db;">데이터 출처</b> — 구성종목·비중: TimeFolio TIME ETF 공식 페이지(timeetf.co.kr, 2026.08.03 기준 TOP10). 기준가·시장가: 동일 페이지 기준가격 표(2026.08.03). 개별 종목 시세: Stooq / Yahoo Finance(자동, 브라우저 CORS 통과 시에만).</div>
+  <div><b style="color:#c7d2db;">데이터 출처</b> — 구성종목·비중: TimeFolio TIME ETF 공식 페이지(timeetf.co.kr, 2026.08.03 기준 TOP10). 기준가·시장가: 동일 페이지 기준가격 표(2026.08.03). 개별 종목 시세: Finnhub(API 키 필요, 1순위) / Stooq·Yahoo Finance(2·3순위, 2026.08.04 브라우저 CORS 차단 확인됨 — 폴백 코드만 유지).</div>
   <div style="margin-top:6px;"><span class="warn">한계</span> — ① 공식 페이지의 "구성종목" 전체 목록(약 100종목 이상, 더보기 11페이지)은 이 페이지에 반영되지 않았고 TOP10만 표시합니다. ② TOP10 비중 합 44.19%로, TIGER 차이나반도체 모니터(TOP 21종목이 사실상 전량)와 달리 이 근사치는 펀드 전체를 대표하지 못합니다. ③ 미국 정규장은 KST 기준 대략 22:30~05:00(서머타임 시) / 23:30~06:00(표준시)이며 이 페이지의 개장 판정은 서머타임 경계일을 정확히 계산하지 않은 근사치입니다. ④ 수동 입력값은 저장되지 않고 새로고침 시 초기화됩니다.</div>
   <div style="margin-top:6px;">최초 생성 2026.08.04 · 자동 시세 수신은 실제 배포 후 동작 확인이 필요합니다(이전 china-semi-monitor.html도 같은 방식으로 배포 후 검증했습니다).</div>
 </footer>
@@ -225,7 +239,21 @@
     }
   }
 
-  // 1순위: Stooq 일별 종가 CSV (최근 10일 범위 → 마지막 2개 종가로 등락 계산)
+  // 1순위: Finnhub 실시간 quote (API 키 필요, 로컬 저장소에서 읽음)
+  async function fetchFinnhub(ticker){
+    const key = localStorage.getItem("finnhub_api_key");
+    if(!key) throw new Error("no api key");
+    const url = `https://finnhub.io/api/v1/quote?symbol=${encodeURIComponent(ticker)}&token=${encodeURIComponent(key)}`;
+    const res = await fetchWithTimeout(url, 6000);
+    const json = await res.json();
+    // Finnhub는 키가 잘못됐거나 quota 초과 시에도 200을 주고 c(현재가)=0, t(타임스탬프)=0으로 응답하는 경우가 있음
+    if(json == null || typeof json.c !== "number" || (json.c===0 && json.t===0)){
+      throw new Error("invalid response (키 확인 또는 quota 초과 가능)");
+    }
+    return { price: json.c, pct: json.dp, date: null, source: "finnhub" };
+  }
+
+  // 2순위: Stooq 일별 종가 CSV (최근 10일 범위 → 마지막 2개 종가로 등락 계산)
   async function fetchStooq(ticker){
     const d2 = new Date();
     const d1 = new Date(d2.getTime() - 10*24*3600*1000);
@@ -244,7 +272,7 @@
     return { price: lastClose, pct: (lastClose-prevClose)/prevClose*100, date: last[0], source:"stooq" };
   }
 
-  // 2순위: Yahoo Finance chart API 폴백
+  // 3순위: Yahoo Finance chart API 폴백
   async function fetchYahoo(ticker){
     const url = `https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?range=5d&interval=1d`;
     const res = await fetchWithTimeout(url, 6000);
@@ -259,14 +287,19 @@
 
   async function fetchOne(ticker){
     try{
-      const r = await fetchStooq(ticker);
+      const r = await fetchFinnhub(ticker);
       return {...r, status:'ok'};
-    }catch(e1){
+    }catch(e0){
       try{
-        const r = await fetchYahoo(ticker);
+        const r = await fetchStooq(ticker);
         return {...r, status:'ok'};
-      }catch(e2){
-        return {status:'fail', error:(e1?.message||'')+' / '+(e2?.message||'')};
+      }catch(e1){
+        try{
+          const r = await fetchYahoo(ticker);
+          return {...r, status:'ok'};
+        }catch(e2){
+          return {status:'fail', error:(e0?.message||'')+' / '+(e1?.message||'')+' / '+(e2?.message||'')};
+        }
       }
     }
   }
@@ -385,6 +418,22 @@
     const now = new Date();
     document.getElementById("lastUpdated").textContent = "마지막 수신 시도: "+now.toLocaleTimeString("ko-KR");
   }
+
+  function updateKeyStatus(){
+    const key = localStorage.getItem("finnhub_api_key");
+    const el = document.getElementById("keyStatus");
+    el.textContent = key ? `키 저장됨(마지막 4자리 …${key.slice(-4)})` : "저장된 키 없음 — Finnhub 미사용, Stooq/Yahoo만 시도(둘 다 차단 확인됨)";
+  }
+
+  document.getElementById("btnSaveKey").addEventListener("click", ()=>{
+    const v = document.getElementById("finnhubKeyInput").value.trim();
+    if(!v){ alert("키를 입력해 주세요."); return; }
+    localStorage.setItem("finnhub_api_key", v);
+    document.getElementById("finnhubKeyInput").value = "";
+    updateKeyStatus();
+    refreshAll();
+  });
+  updateKeyStatus();
 
   document.getElementById("btnRefresh").addEventListener("click", refreshAll);
   let timer = null;
