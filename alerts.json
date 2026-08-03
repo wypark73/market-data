@@ -1,1 +1,10 @@
-[]
+[
+  {
+    "code": "HEARTBEAT",
+    "level": "INFO",
+    "title": "정상 가동 중",
+    "body": "KOSPI200 986.72 (DD -33.2%) / 모드 중도 / Munger 2단계 / 인플레 0/2 / 게이트 open",
+    "ack_key": null,
+    "edge": true
+  }
+]
