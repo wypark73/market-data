@@ -1,12 +1,12 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-08-04T18:25:41.904257+09:00",
-  "run_slot": "A",
+  "updated_at": "2026-08-05T07:40:36.495475+09:00",
+  "run_slot": "B",
   "data_freshness": {
-    "data_json_updated_at": "2026-08-04T18:24:27.202706+09:00",
+    "data_json_updated_at": "2026-08-05T07:39:20.979147+09:00",
     "kospi200_last_date": "2026-08-04",
-    "sp500_last_date": "2026-07-31",
-    "hy_oas_last_date": "2026-07-30",
+    "sp500_last_date": "2026-08-04",
+    "hy_oas_last_date": "2026-08-03",
     "stale": false,
     "intraday_risk": false
   },
@@ -61,7 +61,7 @@
   },
   "gate": {
     "status": "open",
-    "usdkrw": 1432.99,
+    "usdkrw": 1429.45,
     "usdkrw_leg": false,
     "cds_leg": false,
     "cds_check_required": false,
@@ -74,7 +74,7 @@
       "stale": false
     },
     "sp500": {
-      "value": 7609.78,
+      "value": 7736.52,
       "source": "series_max",
       "stale": false
     }
@@ -84,8 +84,8 @@
       "date": "2026-08-04",
       "close": 1000.03,
       "intraday_risk": false,
-      "observed_at": "2026-08-04T18:25:41.904257+09:00",
-      "run_slot": "A"
+      "observed_at": "2026-08-05T07:40:36.495475+09:00",
+      "run_slot": "B"
     }
   },
   "alerts_fired": {
