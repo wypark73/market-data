@@ -56,6 +56,8 @@
   .banner b{color:var(--amber);}
   .banner.err{background:#1c0f0e;border-color:#5c2a26;color:#f0b3ae;}
   .banner.err b{color:var(--down);}
+  .banner.ok{background:#0e1c15;border-color:#2a5c40;color:#a8e8c9;}
+  .banner.ok b{color:var(--up);}
 
   table{width:100%;border-collapse:collapse;background:var(--panel);border:1px solid var(--line);border-radius:10px;overflow:hidden;}
   thead th{position:sticky;top:38px;background:var(--panel2);text-align:right;font-size:11px;color:var(--muted);
@@ -89,6 +91,15 @@
     padding:6px 12px;font-size:12.5px;cursor:pointer;}
   button.refresh:hover{border-color:var(--amber-dim);}
 
+  .edit-row{display:grid;grid-template-columns:1fr 64px 64px 26px;gap:6px;margin-bottom:6px;align-items:center;}
+  .edit-row input{background:#0d1218;border:1px solid var(--line);color:var(--text);border-radius:6px;
+    padding:6px 8px;font-size:13px;width:100%;min-width:0;}
+  .edit-row .e-ticker{text-transform:uppercase;}
+  .edit-row.e-warn input.e-ticker{border-color:var(--amber-dim);}
+  .edit-row .e-del{background:#1c0f0e;border:1px solid #5c2a26;color:var(--down);border-radius:6px;
+    height:100%;cursor:pointer;font-size:14px;}
+  @media (max-width:480px){.edit-row{grid-template-columns:1fr 52px 52px 24px;} .edit-row input{font-size:16px;padding:6px 5px;}}
+
   footer{max-width:920px;margin:30px auto 0;padding:16px;color:var(--muted);font-size:11.5px;line-height:1.7;
     border-top:1px solid var(--line);}
   footer a{color:#9fb6c9;}
@@ -104,7 +115,7 @@
 <header>
   <div class="eyebrow">TIME ACTIVE ETF · TimeFolio</div>
   <h1>TIME 미국나스닥100액티브 <span class="code">426030</span></h1>
-  <div class="sub">구성종목 TOP 10 모니터 · 비교지수: NASDAQ 100 Index(KRW)</div>
+  <div class="sub">구성종목 자동 갱신 모니터 · 비교지수: NASDAQ 100 Index(KRW)</div>
 </header>
 
 <main>
@@ -121,17 +132,16 @@
       <div class="foot">2026.08.03 기준</div>
     </div>
     <div class="tile">
-      <div class="label">TOP10 가중 등락(당일)</div>
+      <div class="label">구성종목 가중 등락(당일)</div>
       <div class="val num" id="tileApprox">—</div>
       <div class="foot" id="tileApproxFoot">시세 수신 시도 중…</div>
     </div>
   </div>
 
   <div class="banner" id="keyBanner">
-    <b>Finnhub API 키 설정 (최초 1회)</b><br>
-    Stooq·Yahoo Finance는 브라우저 CORS로 막힌 것이 확인됐습니다. Finnhub는 클라이언트 측 사용을 위해 CORS를 허용한다는 문서가 있으나<b> 이 페이지에서 실제로 통과하는지는 아직 확인 전</b>입니다.<br>
+    <b>Finnhub API 키 설정 (최초 1회, 시세용)</b><br>
     ① <a href="https://finnhub.io/register" style="color:#f0d9a0;">finnhub.io/register</a>에서 무료 가입(카드 불필요) → 대시보드에서 API 키 복사 → 아래에 붙여넣고 저장하세요.<br>
-    ② 키는 <b>이 브라우저의 로컬 저장소에만</b> 저장되며, 페이지 소스나 GitHub 저장소에는 남지 않습니다. 무료 티어는 분당 60회 호출로 종목 10개 새로고침에는 충분합니다.
+    ② 키는 <b>이 브라우저의 로컬 저장소에만</b> 저장되며, 페이지 소스나 GitHub 저장소에는 남지 않습니다.
     <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
       <input type="password" id="finnhubKeyInput" placeholder="Finnhub API 키 붙여넣기"
         style="background:#0d1218;border:1px solid var(--line);color:var(--text);border-radius:6px;padding:6px 10px;font-size:12.5px;min-width:220px;">
@@ -142,14 +152,42 @@
 
   <div class="banner">
     <b>이 페이지가 자동으로 하는 일과 하지 않는 일</b><br>
-    · 구성종목 TOP 10(비중 합 44.19%, 2026.08.03 공시 기준)의 미국 주식 시세만 브라우저에서 직접 수신을 <b>시도</b>합니다(1순위 Finnhub → 2순위 Stooq → 3순위 Yahoo, 뒤 둘은 이미 CORS 차단 확인됨).<br>
-    · 426030 자체의 KRX 기준가·시장가는 자동 수신하지 않습니다 — 국내 ETF 실시간 시세는 브라우저에서 CORS로 막히는 경우가 많다는 것이 이전 프로젝트(TIGER 396520)에서 이미 확인된 사실이라, 여기서는 처음부터 수동 갱신으로 설계했습니다.<br>
-    · 아래 표의 "TOP10 가중 등락"은 <b>펀드 전체 수익률의 근사치가 아니라 상위 10종목(44.19%)만의 가중 평균</b>이고, 원화환산(환율) 효과도 반영하지 않은 <b>현지 통화(USD) 기준</b> 수치입니다.
+    · 구성종목은 페이지를 열 때마다 timeetf.co.kr 공식 상품페이지를 직접 읽어 <b>자동으로</b> 최신 TOP10을 반영 시도합니다(방식은 아래 "구성종목 자동 갱신" 참고). CORS로 막히면 자동 실패하고 마지막으로 성공한 데이터를 계속 씁니다.<br>
+    · 종목별 시세는 1순위 Finnhub → 2순위 Stooq → 3순위 Yahoo 순으로 시도합니다(뒤 둘은 이미 이 origin에서 CORS 차단 확인됨).<br>
+    · 426030 자체의 KRX 기준가·시장가는 자동 수신하지 않습니다 — 국내 ETF 실시간 시세는 브라우저에서 CORS로 막히는 경우가 많다는 것이 이전 프로젝트(TIGER 396520)에서 이미 확인된 사실입니다.<br>
+    · "가중 등락"은 자동 반영된 종목들만의 가중 평균이며(futures/비상장 등 시세 없는 줄은 제외), 원화환산(환율) 효과는 반영하지 않은 <b>현지 통화(USD) 기준</b> 수치입니다.
+  </div>
+
+  <div class="banner" id="staleBanner" style="display:none;"></div>
+  <div class="banner" id="compAutoBanner">구성종목 자동 갱신 대기 중…</div>
+
+  <div class="section-head">
+    <h2>구성종목 자동 갱신</h2>
+    <div class="meta">출처 <a href="https://timeetf.co.kr/m11_view.php?idx=2" style="color:#9fb6c9;">timeetf.co.kr</a> · 기준일 <span id="basisMetaDate">2026.08.03</span></div>
+  </div>
+  <div style="background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-bottom:14px;">
+    <div style="font-size:12.5px;color:var(--muted);line-height:1.6;margin-bottom:10px;">
+      페이지를 열 때 자동으로 공식 페이지를 읽어 TOP10을 갱신합니다(직접 요청 실패 시 공개 프록시 2곳을 순서대로 시도). 종목명은 인식하지만 <b>티커를 자동으로 못 찾은 종목</b>은 아래 목록에 주황색으로 표시되니 직접 채워주시면 됩니다.
+    </div>
+    <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-bottom:10px;">
+      <label style="font-size:12.5px;color:var(--muted);">기준일
+        <input type="date" id="basisDateInput" style="background:#0d1218;border:1px solid var(--line);color:var(--text);border-radius:6px;padding:5px 8px;font-size:13px;margin-left:6px;">
+      </label>
+      <span id="weightSumLabel" class="foot"></span>
+    </div>
+    <div id="editorRows"><!-- JS로 렌더 --></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;">
+      <button class="refresh" id="btnAutoUpdate" style="border-color:var(--amber-dim);">지금 자동 갱신</button>
+      <button class="refresh" id="btnAddRow">+ 종목 추가</button>
+      <button class="refresh" id="btnSortWeight">비중순 정렬</button>
+      <button class="refresh" id="btnSaveHoldings">직접 수정한 내용 저장</button>
+      <button class="refresh" id="btnResetHoldings">기본값(08.03 공시)으로 초기화</button>
+    </div>
   </div>
 
   <div class="section-head">
-    <h2>구성종목 TOP 10</h2>
-    <div class="meta">기준일 2026.08.03 · 출처 <a href="https://timeetf.co.kr/m11_view.php?idx=2" style="color:#9fb6c9;">timeetf.co.kr</a></div>
+    <h2>구성종목 (실시간 시세)</h2>
+    <div class="meta">위 자동 갱신 결과 기준</div>
   </div>
 
   <table>
@@ -168,50 +206,69 @@
   </table>
 
   <div class="controls">
-    <button class="refresh" id="btnRefresh">지금 새로고침</button>
-    <label><input type="checkbox" id="autoRefresh"> 60초마다 자동 새로고침</label>
+    <button class="refresh" id="btnRefresh">시세 새로고침</button>
+    <label><input type="checkbox" id="autoRefresh"> 60초마다 시세 자동 새로고침</label>
     <span id="lastUpdated">아직 수신 시도 전</span>
     <span id="marketStatus"></span>
-  </div>
-
-  <div class="section-head">
-    <h2>시세 자동 수신 — 무엇을, 왜 이렇게</h2>
-  </div>
-  <div class="banner" id="sourceBanner">
-    <b>확인된 사실</b>: Stooq(stooq.com)·Yahoo Finance(query1.finance.yahoo.com) 모두 이 페이지(origin: github.io)에서 <code>Access-Control-Allow-Origin</code> 헤더 없음 — 브라우저 콘솔에서 CORS 차단 직접 확인됨(2026.08.04).<br>
-    <b>미확인</b>: Finnhub(finnhub.io)가 이 페이지에서 CORS를 통과하는지는 실제 배포 후 확인이 필요합니다. 위에 키를 저장한 뒤 새로고침해 결과를 봐 주세요.<br>
-    Finnhub도 막히면 종목별로 "실패" 배지를 눌러 값을 직접 입력할 수 있습니다(새로고침하면 사라지는 임시 입력, 저장되지 않음).
   </div>
 
 </main>
 
 <footer>
-  <div><b style="color:#c7d2db;">데이터 출처</b> — 구성종목·비중: TimeFolio TIME ETF 공식 페이지(timeetf.co.kr, 2026.08.03 기준 TOP10). 기준가·시장가: 동일 페이지 기준가격 표(2026.08.03). 개별 종목 시세: Finnhub(API 키 필요, 1순위) / Stooq·Yahoo Finance(2·3순위, 2026.08.04 브라우저 CORS 차단 확인됨 — 폴백 코드만 유지).</div>
-  <div style="margin-top:6px;"><span class="warn">한계</span> — ① 공식 페이지의 "구성종목" 전체 목록(약 100종목 이상, 더보기 11페이지)은 이 페이지에 반영되지 않았고 TOP10만 표시합니다. ② TOP10 비중 합 44.19%로, TIGER 차이나반도체 모니터(TOP 21종목이 사실상 전량)와 달리 이 근사치는 펀드 전체를 대표하지 못합니다. ③ 미국 정규장은 KST 기준 대략 22:30~05:00(서머타임 시) / 23:30~06:00(표준시)이며 이 페이지의 개장 판정은 서머타임 경계일을 정확히 계산하지 않은 근사치입니다. ④ 수동 입력값은 저장되지 않고 새로고침 시 초기화됩니다.</div>
-  <div style="margin-top:6px;">최초 생성 2026.08.04 · 자동 시세 수신은 실제 배포 후 동작 확인이 필요합니다(이전 china-semi-monitor.html도 같은 방식으로 배포 후 검증했습니다).</div>
+  <div><b style="color:#c7d2db;">데이터 출처</b> — 구성종목·비중: TimeFolio TIME ETF 공식 페이지(timeetf.co.kr) 자동 읽기(실패 시 마지막 성공 데이터 유지, 그마저 없으면 2026.08.03 공시 TOP10). 기준가·시장가: 동일 페이지 기준가격 표(2026.08.03, 고정). 개별 종목 시세: Finnhub(키 필요, 1순위) / Stooq·Yahoo Finance(2·3순위, 2026.08.04 브라우저 CORS 차단 확인됨).</div>
+  <div style="margin-top:6px;"><span class="warn">한계</span> — ① 공식 페이지 스크레이핑은 사이트 구조가 바뀌면 조용히 깨질 수 있습니다 — 그래서 "426030" 문자열 확인, 순위 1~N 연속성 확인 두 가지 검증을 통과한 경우에만 반영합니다. 검증에 실패하면 새 데이터를 버리고 기존 데이터를 유지합니다. ② 회사명 → 티커 매핑은 자체 사전(약 80개 나스닥100 관련 종목)이며, 사전에 없는 신규 편입 종목은 티커를 직접 입력해야 시세가 붙습니다. ③ 선물(NASDAQ 100 E-MINI 등)·비상장 종목은 시세 조회 대상에서 자동 제외됩니다. ④ "가중 등락"은 시세가 붙은 종목만의 근사치이며 펀드 전체 수익률이 아닙니다. ⑤ 구성종목·기준일은 이 브라우저의 로컬 저장소에 저장되며 다른 기기·브라우저에는 동기화되지 않습니다(단, 자동 갱신은 페이지를 여는 브라우저마다 새로 시도되므로 크게 문제되지 않습니다). ⑥ 미국 정규장은 KST 기준 대략 22:30~05:00(서머타임 시) / 23:30~06:00(표준시)이며 개장 판정은 서머타임 경계일을 정확히 계산하지 않은 근사치입니다.</div>
+  <div style="margin-top:6px;">최초 생성 2026.08.04 · 구성종목 자동 갱신 기능 추가 2026.08.06 · 실제 CORS 통과 여부는 배포 후 확인이 필요합니다.</div>
 </footer>
 
 <script>
 (function(){
   "use strict";
 
-  // 종목명(국문/영문), 티커, 비중 — timeetf.co.kr 2026.08.03 기준 TOP10 공시
-  const HOLDINGS = [
-    {rank:1,  ko:"샌디스크",        en:"Sandisk Corp",                         ticker:"SNDK", weight:6.48},
-    {rank:2,  ko:"인텔",           en:"Intel Corp",                            ticker:"INTC", weight:5.16},
-    {rank:3,  ko:"마이크론 테크놀로지", en:"Micron Technology Inc",                ticker:"MU",   weight:4.80},
-    {rank:4,  ko:"램 리서치",       en:"Lam Research Corp",                     ticker:"LRCX", weight:4.63},
-    {rank:5,  ko:"델 테크놀로지스",  en:"Dell Technologies Inc",                 ticker:"DELL", weight:4.52},
-    {rank:6,  ko:"엔비디아",        en:"NVIDIA Corp",                           ticker:"NVDA", weight:4.52},
-    {rank:7,  ko:"AMD",           en:"Advanced Micro Devices Inc",             ticker:"AMD",  weight:4.17},
-    {rank:8,  ko:"웨스턴 디지털",    en:"Western Digital Corp",                  ticker:"WDC",  weight:3.34},
-    {rank:9,  ko:"마벨 테크놀로지",  en:"Marvell Technology Inc",                ticker:"MRVL", weight:3.33},
-    {rank:10, ko:"크레도 테크놀로지", en:"Credo Technology Group Holding Ltd",    ticker:"CRDO", weight:3.24},
+  // ---------- 기본값 (자동 갱신 실패 시 최후 폴백) ----------
+  const DEFAULT_HOLDINGS = [
+    {ko:"샌디스크",        en:"Sandisk Corp",                         ticker:"SNDK", weight:6.48},
+    {ko:"인텔",           en:"Intel Corp",                            ticker:"INTC", weight:5.16},
+    {ko:"마이크론 테크놀로지", en:"Micron Technology Inc",                ticker:"MU",   weight:4.80},
+    {ko:"램 리서치",       en:"Lam Research Corp",                     ticker:"LRCX", weight:4.63},
+    {ko:"델 테크놀로지스",  en:"Dell Technologies Inc",                 ticker:"DELL", weight:4.52},
+    {ko:"엔비디아",        en:"NVIDIA Corp",                           ticker:"NVDA", weight:4.52},
+    {ko:"AMD",           en:"Advanced Micro Devices Inc",             ticker:"AMD",  weight:4.17},
+    {ko:"웨스턴 디지털",    en:"Western Digital Corp",                  ticker:"WDC",  weight:3.34},
+    {ko:"마벨 테크놀로지",  en:"Marvell Technology Inc",                ticker:"MRVL", weight:3.33},
+    {ko:"크레도 테크놀로지", en:"Credo Technology Group Holding Ltd",    ticker:"CRDO", weight:3.24},
   ];
-  const TOP10_WEIGHT_SUM = HOLDINGS.reduce((s,h)=>s+h.weight,0); // 44.19
+  const DEFAULT_BASIS_DATE = "2026-08-03";
+  const LS_HOLDINGS_KEY = "time426030_holdings";
+  const LS_BASIS_KEY = "time426030_basis_date";
+  const SOURCE_URL = "https://timeetf.co.kr/m11_view.php?idx=2";
+  const FUND_CODE = "426030";
 
-  const state = {}; // ticker -> {price, pct, status: 'ok'|'fail'|'stale', source}
-  HOLDINGS.forEach(h=> state[h.ticker] = {price:null, pct:null, status:'pending', source:null});
+  function loadHoldings(){
+    try{
+      const raw = localStorage.getItem(LS_HOLDINGS_KEY);
+      if(raw){
+        const parsed = JSON.parse(raw);
+        if(Array.isArray(parsed) && parsed.length>0) return parsed;
+      }
+    }catch(e){ /* 저장된 값이 손상됐으면 기본값으로 폴백 */ }
+    return DEFAULT_HOLDINGS.map(h=>({...h}));
+  }
+  function loadBasisDate(){ return localStorage.getItem(LS_BASIS_KEY) || DEFAULT_BASIS_DATE; }
+
+  let HOLDINGS = loadHoldings();
+  let BASIS_DATE = loadBasisDate();
+  function weightSum(){ return HOLDINGS.reduce((s,h)=>s+Number(h.weight||0),0); }
+
+  // state는 HOLDINGS와 같은 순서의 배열 — 티커가 비어있거나 중복돼도 충돌 없음
+  let state = [];
+  function rebuildState(){
+    state = HOLDINGS.map((h, idx)=>{
+      const prev = state[idx];
+      if(prev && prev._ticker===h.ticker) return prev;
+      return {price:null, pct:null, status:'pending', source:null, manual:false, _ticker:h.ticker};
+    });
+  }
+  rebuildState();
 
   function fmtPct(p){
     if(p===null||p===undefined||isNaN(p)) return "—";
@@ -239,21 +296,20 @@
     }
   }
 
-  // 1순위: Finnhub 실시간 quote (API 키 필요, 로컬 저장소에서 읽음)
+  // ================= 가격 시세 (종목별) =================
+
   async function fetchFinnhub(ticker){
     const key = localStorage.getItem("finnhub_api_key");
     if(!key) throw new Error("no api key");
     const url = `https://finnhub.io/api/v1/quote?symbol=${encodeURIComponent(ticker)}&token=${encodeURIComponent(key)}`;
     const res = await fetchWithTimeout(url, 6000);
     const json = await res.json();
-    // Finnhub는 키가 잘못됐거나 quota 초과 시에도 200을 주고 c(현재가)=0, t(타임스탬프)=0으로 응답하는 경우가 있음
     if(json == null || typeof json.c !== "number" || (json.c===0 && json.t===0)){
       throw new Error("invalid response (키 확인 또는 quota 초과 가능)");
     }
     return { price: json.c, pct: json.dp, date: null, source: "finnhub" };
   }
 
-  // 2순위: Stooq 일별 종가 CSV (최근 10일 범위 → 마지막 2개 종가로 등락 계산)
   async function fetchStooq(ticker){
     const d2 = new Date();
     const d1 = new Date(d2.getTime() - 10*24*3600*1000);
@@ -272,7 +328,6 @@
     return { price: lastClose, pct: (lastClose-prevClose)/prevClose*100, date: last[0], source:"stooq" };
   }
 
-  // 3순위: Yahoo Finance chart API 폴백
   async function fetchYahoo(ticker){
     const url = `https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?range=5d&interval=1d`;
     const res = await fetchWithTimeout(url, 6000);
@@ -286,31 +341,167 @@
   }
 
   async function fetchOne(ticker){
-    try{
-      const r = await fetchFinnhub(ticker);
-      return {...r, status:'ok'};
-    }catch(e0){
-      try{
-        const r = await fetchStooq(ticker);
-        return {...r, status:'ok'};
-      }catch(e1){
-        try{
-          const r = await fetchYahoo(ticker);
-          return {...r, status:'ok'};
-        }catch(e2){
-          return {status:'fail', error:(e0?.message||'')+' / '+(e1?.message||'')+' / '+(e2?.message||'')};
-        }
+    try{ return {...(await fetchFinnhub(ticker)), status:'ok'}; }
+    catch(e0){
+      try{ return {...(await fetchStooq(ticker)), status:'ok'}; }
+      catch(e1){
+        try{ return {...(await fetchYahoo(ticker)), status:'ok'}; }
+        catch(e2){ return {status:'fail', error:(e0?.message||'')+' / '+(e1?.message||'')+' / '+(e2?.message||'')}; }
       }
     }
   }
 
+  // ================= 구성종목 자동 갱신 (스크레이핑) =================
+
+  async function fetchHtmlDirect(){
+    const res = await fetchWithTimeout(SOURCE_URL, 8000);
+    return await res.text();
+  }
+  async function fetchHtmlViaProxy(buildUrl){
+    const res = await fetchWithTimeout(buildUrl(SOURCE_URL), 10000);
+    return await res.text();
+  }
+  async function fetchCompositionHtml(){
+    try{ return { html: await fetchHtmlDirect(), via:"직접" }; }
+    catch(e1){
+      try{ return { html: await fetchHtmlViaProxy(u=>"https://api.allorigins.win/raw?url="+encodeURIComponent(u)), via:"allorigins 프록시" }; }
+      catch(e2){
+        try{ return { html: await fetchHtmlViaProxy(u=>"https://api.codetabs.com/v1/proxy?quest="+encodeURIComponent(u)), via:"codetabs 프록시" }; }
+        catch(e3){ throw new Error("모든 경로 실패 — 직접:"+e1.message+" / allorigins:"+e2.message+" / codetabs:"+e3.message); }
+      }
+    }
+  }
+
+  function htmlToFlatText(html){
+    const doc = new DOMParser().parseFromString(html, "text/html");
+    const root = doc.body || doc.documentElement;
+    return root.textContent.replace(/\s+/g," ").trim();
+  }
+
+  function extractBasisDate(text){
+    const m = text.match(/(\d{4})\.(\d{2})\.(\d{2})\s*기준/);
+    return m ? `${m[1]}-${m[2]}-${m[3]}` : null;
+  }
+
+  function parseTop10(text){
+    if(text.indexOf(FUND_CODE) === -1){
+      throw new Error("검증 실패 — 페이지에서 "+FUND_CODE+"를 찾지 못함(다른 상품 페이지가 반환됐을 가능성)");
+    }
+    const startIdx = text.indexOf("구성종목 TOP 10");
+    if(startIdx===-1) throw new Error("TOP10 섹션을 찾지 못함(페이지 구조 변경 가능성)");
+    let endIdx = text.indexOf("수익률", startIdx+10);
+    if(endIdx===-1 || endIdx-startIdx>5000) endIdx = startIdx+3000;
+    const section = text.slice(startIdx, endIdx);
+
+    const re = /(\d{1,2})([A-Z][A-Za-z0-9&.,'\-\/ ]{2,60}?)\s*(-?\d{1,3}\.\d{2})%/g;
+    const found = [];
+    let m;
+    while((m = re.exec(section)) !== null){
+      found.push({ rank: parseInt(m[1],10), name: m[2].trim().replace(/\s{2,}/g," "), weight: parseFloat(m[3]) });
+    }
+    const seq = [];
+    let expected = 1;
+    for(const f of found){
+      if(f.rank === expected){ seq.push(f); expected++; }
+      else if(seq.length===0){ continue; }
+      else break;
+    }
+    if(seq.length < 5) throw new Error("연속된 순위 데이터를 충분히 찾지 못함("+seq.length+"개) — 페이지 구조가 바뀌었을 수 있음");
+    return seq;
+  }
+
+  // 회사명(정규화) → 티커. 나스닥100 및 이 펀드가 과거 편입했던 종목 위주 (완전하지 않음)
+  const NAME_TICKER_MAP = {
+    "NVIDIA":"NVDA", "ADVANCED MICRO DEVICES":"AMD", "MICRON TECHNOLOGY":"MU",
+    "MICROSOFT":"MSFT", "INTEL":"INTC", "SANDISK":"SNDK", "APPLE":"AAPL",
+    "BROADCOM":"AVGO", "DELL TECHNOLOGIES":"DELL", "LAM RESEARCH":"LRCX",
+    "WESTERN DIGITAL":"WDC", "MARVELL TECHNOLOGY":"MRVL", "CREDO TECHNOLOGY":"CRDO",
+    "META PLATFORMS":"META", "ALPHABET":"GOOGL", "REDDIT":"RDDT", "TESLA":"TSLA",
+    "ROBINHOOD MARKETS":"HOOD", "APPLOVIN":"APP", "BLOOM ENERGY":"BE",
+    "QUALCOMM":"QCOM", "AMAZONCOM":"AMZN", "AMAZON":"AMZN", "NETFLIX":"NFLX",
+    "COSTCO WHOLESALE":"COST", "PEPSICO":"PEP", "ADOBE":"ADBE",
+    "CISCO SYSTEMS":"CSCO", "COMCAST":"CMCSA", "TEXAS INSTRUMENTS":"TXN",
+    "AMGEN":"AMGN", "HONEYWELL INTERNATIONAL":"HON", "STARBUCKS":"SBUX",
+    "GILEAD SCIENCES":"GILD", "MONDELEZ INTERNATIONAL":"MDLZ",
+    "BOOKING HOLDINGS":"BKNG", "INTUIT":"INTU", "AUTOMATIC DATA PROCESSING":"ADP",
+    "VERTEX PHARMACEUTICALS":"VRTX", "REGENERON PHARMACEUTICALS":"REGN",
+    "MODERNA":"MRNA", "PALO ALTO NETWORKS":"PANW", "CROWDSTRIKE":"CRWD",
+    "FORTINET":"FTNT", "MARRIOTT INTERNATIONAL":"MAR", "PACCAR":"PCAR",
+    "ANALOG DEVICES":"ADI", "KLA":"KLAC", "APPLIED MATERIALS":"AMAT",
+    "SYNOPSYS":"SNPS", "CADENCE DESIGN SYSTEMS":"CDNS", "ASML HOLDING":"ASML",
+    "COGNIZANT TECHNOLOGY SOLUTIONS":"CTSH", "CHARTER COMMUNICATIONS":"CHTR",
+    "ELECTRONIC ARTS":"EA", "PAYPAL HOLDINGS":"PYPL", "MERCADOLIBRE":"MELI",
+    "DATADOG":"DDOG", "ZSCALER":"ZS", "WORKDAY":"WDAY", "ATLASSIAN":"TEAM",
+    "MICROCHIP TECHNOLOGY":"MCHP", "ON SEMICONDUCTOR":"ON",
+    "GLOBALFOUNDRIES":"GFS", "ARM HOLDINGS":"ARM", "PALANTIR TECHNOLOGIES":"PLTR",
+    "COINBASE GLOBAL":"COIN", "DOORDASH":"DASH", "CDW":"CDW", "FASTENAL":"FAST",
+    "XCEL ENERGY":"XEL", "KRAFT HEINZ":"KHC", "KEURIG DR PEPPER":"KDP",
+    "LULULEMON ATHLETICA":"LULU", "OLD DOMINION FREIGHT LINE":"ODFL",
+    "ROSS STORES":"ROST", "IDEXX LABORATORIES":"IDXX", "VERISK ANALYTICS":"VRSK",
+    "CONSTELLATION ENERGY":"CEG", "CSX":"CSX", "BAKER HUGHES":"BKR",
+    "DEXCOM":"DXCM", "BIOGEN":"BIIB", "ILLUMINA":"ILMN",
+    "WARNER BROS DISCOVERY":"WBD", "TMOBILE US":"TMUS", "T MOBILE US":"TMUS",
+    "DIAMONDBACK ENERGY":"FANG"
+  };
+  function normalizeName(name){
+    return name
+      .replace(/[.,]/g,"")
+      .replace(/\b(Inc|Incorporated|Corp|Corporation|Company|Co|Ltd|Limited|Group|Holdings?|Holding|plc|PLC|Class\s*[A-C]|SA|NV|AG)\b/gi,"")
+      .replace(/\s+/g," ")
+      .trim()
+      .toUpperCase();
+  }
+  function isNonEquityLine(name){
+    return /E-?MINI|INDEX FUT|FUTURE/i.test(name) || /SPACEX/i.test(name);
+  }
+  function mapNameToTicker(name){
+    return NAME_TICKER_MAP[normalizeName(name)] || null;
+  }
+
+  async function autoUpdateComposition(){
+    const banner = document.getElementById("compAutoBanner");
+    banner.className = "banner";
+    banner.textContent = "구성종목 자동 갱신 시도 중… (직접 → allorigins 프록시 → codetabs 프록시 순으로 시도)";
+    try{
+      const { html, via } = await fetchCompositionHtml();
+      const text = htmlToFlatText(html);
+      const seq = parseTop10(text);
+      const basis = extractBasisDate(text);
+
+      const newHoldings = seq.map(s=>{
+        const nonEquity = isNonEquityLine(s.name);
+        const ticker = nonEquity ? "" : (mapNameToTicker(s.name) || "");
+        return { ko:"", en:s.name, ticker, weight:s.weight };
+      });
+      const unmapped = newHoldings.filter(h=>!h.ticker);
+
+      HOLDINGS = newHoldings;
+      BASIS_DATE = basis || new Date().toISOString().slice(0,10);
+      localStorage.setItem(LS_HOLDINGS_KEY, JSON.stringify(HOLDINGS));
+      localStorage.setItem(LS_BASIS_KEY, BASIS_DATE);
+      rebuildState();
+      renderEditor();
+      updateBasisMeta();
+      renderTable();
+      updateSummary();
+
+      banner.className = "banner ok";
+      banner.innerHTML = `<b>자동 갱신 성공</b>(${via}) · ${newHoldings.length}종목 반영, 기준일 ${BASIS_DATE}` +
+        (unmapped.length ? ` · <b>티커 매핑 실패 ${unmapped.length}건</b> — ${unmapped.map(h=>h.en).join(", ")} (아래 목록에서 직접 입력해 주세요, 선물/비상장이면 비워두면 됩니다)` : " · 전 종목 티커 매핑 성공");
+      return true;
+    }catch(e){
+      banner.className = "banner err";
+      banner.innerHTML = `<b>구성종목 자동 갱신 실패</b> — ${e.message}<br>마지막으로 성공한 데이터(기준일 ${BASIS_DATE})를 계속 사용합니다. 아래 목록에서 직접 수정할 수도 있습니다.`;
+      return false;
+    }
+  }
+
+  // ================= 화면 렌더링 =================
+
   function marketStatusText(){
     const now = new Date();
-    // KST = UTC+9
     const kst = new Date(now.getTime() + (9*60 - now.getTimezoneOffset())*60000);
-    const h = kst.getHours(), m = kst.getMinutes();
-    const mins = h*60+m;
-    // 서머타임 근사: 4~10월 = EDT(22:30~05:00 KST), 그 외 = EST(23:30~06:00 KST)
+    const mins = kst.getHours()*60 + kst.getMinutes();
     const isEDTseason = (kst.getMonth()+1) >= 4 && (kst.getMonth()+1) <= 10;
     const openStart = isEDTseason ? 22*60+30 : 23*60+30;
     const openEndNextDay = isEDTseason ? 5*60 : 6*60;
@@ -321,20 +512,23 @@
   function renderTable(){
     const body = document.getElementById("holdingsBody");
     body.innerHTML = "";
-    HOLDINGS.forEach(h=>{
-      const s = state[h.ticker];
+    HOLDINGS.forEach((h, idx)=>{
+      const s = state[idx] || {status:'pending', price:null, pct:null};
       const tr = document.createElement("tr");
       const priceTxt = s.price!=null ? ("$"+s.price.toFixed(2)) : "—";
       let statusHtml;
-      if(s.status==='ok') statusHtml = `<span class="status ok">수신 완료${s.manual?'(수동)':''}</span>`;
-      else if(s.status==='fail') statusHtml = `<span class="status fail" data-ticker="${h.ticker}" title="클릭해 값 직접 입력">수신 실패 — 입력</span>`;
+      if(!h.ticker) statusHtml = `<span class="status stale" data-idx="${idx}" title="클릭해 값 직접 입력">티커 없음 — 입력</span>`;
+      else if(s.status==='ok') statusHtml = `<span class="status ok">수신 완료${s.manual?'(수동)':''}</span>`;
+      else if(s.status==='fail') statusHtml = `<span class="status fail" data-idx="${idx}" title="클릭해 값 직접 입력">수신 실패 — 입력</span>`;
       else statusHtml = `<span class="status stale">대기</span>`;
+      const enHtml = h.en ? `<span class="en col-en">${h.en}</span>` : "";
+      const displayName = h.ko || h.en || "(이름 없음)";
 
       tr.innerHTML = `
-        <td class="rank num">${h.rank}</td>
-        <td class="name">${h.ko}<span class="en col-en">${h.en}</span></td>
-        <td class="num"><span class="wbadge">${h.weight.toFixed(2)}%</span></td>
-        <td class="num">${h.ticker}</td>
+        <td class="rank num">${idx+1}</td>
+        <td class="name">${displayName}${h.ko ? enHtml : ""}</td>
+        <td class="num"><span class="wbadge">${Number(h.weight).toFixed(2)}%</span></td>
+        <td class="num">${h.ticker||"—"}</td>
         <td class="num">${priceTxt}</td>
         <td class="num ${pctClass(s.pct)}">${fmtPct(s.pct)}</td>
         <td>${statusHtml}</td>
@@ -342,17 +536,18 @@
       body.appendChild(tr);
     });
 
-    // 수신 실패 배지 클릭 → 수동 입력
-    body.querySelectorAll(".status.fail").forEach(el=>{
+    body.querySelectorAll(".status[data-idx]").forEach(el=>{
       el.addEventListener("click", ()=>{
-        const ticker = el.getAttribute("data-ticker");
-        const v = prompt(ticker+"의 당일 등락률(%)을 직접 입력하세요. 예: -1.25");
+        const idx = parseInt(el.getAttribute("data-idx"),10);
+        const h = HOLDINGS[idx];
+        const v = prompt((h.en||h.ko||"종목")+"의 당일 등락률(%)을 직접 입력하세요. 예: -1.25");
         if(v===null || v.trim()==="") return;
         const num = parseFloat(v);
         if(isNaN(num)){ alert("숫자로 입력해 주세요."); return; }
-        state[ticker].pct = num;
-        state[ticker].status = 'ok';
-        state[ticker].manual = true;
+        state[idx] = state[idx] || {};
+        state[idx].pct = num;
+        state[idx].status = 'ok';
+        state[idx].manual = true;
         renderTable();
         updateSummary();
       });
@@ -360,63 +555,65 @@
   }
 
   function updateSummary(){
-    let weightedSum = 0, coveredWeight = 0, okCount=0, failCount=0;
-    HOLDINGS.forEach(h=>{
-      const s = state[h.ticker];
-      if(s.status==='ok' && s.pct!=null){
+    let weightedSum = 0, coveredWeight = 0, okCount=0, priceableCount=0;
+    HOLDINGS.forEach((h, idx)=>{
+      if(!h.ticker) return;
+      priceableCount++;
+      const s = state[idx];
+      if(s && s.status==='ok' && s.pct!=null){
         weightedSum += h.weight * s.pct;
         coveredWeight += h.weight;
         okCount++;
-      } else if(s.status==='fail'){
-        failCount++;
       }
     });
     const tile = document.getElementById("tileApprox");
     const foot = document.getElementById("tileApproxFoot");
     if(coveredWeight>0){
-      const approx = weightedSum / coveredWeight; // 수신된 종목 비중 기준 가중평균
+      const approx = weightedSum / coveredWeight;
       tile.textContent = fmtPct(approx);
       tile.className = "val num "+pctClass(approx);
-      foot.textContent = `${okCount}/${HOLDINGS.length}종목 수신 · 커버 비중 ${coveredWeight.toFixed(2)}%p / TOP10 전체 ${TOP10_WEIGHT_SUM.toFixed(2)}%p (펀드 전체 아님)`;
+      foot.textContent = `${okCount}/${priceableCount}종목 수신 · 커버 비중 ${coveredWeight.toFixed(2)}%p / 구성종목 전체 ${weightSum().toFixed(2)}%p`;
     } else {
       tile.textContent = "—";
       tile.className = "val num";
-      foot.textContent = failCount===HOLDINGS.length ? "전 종목 수신 실패 — CORS 차단 추정, 배지 클릭해 수동 입력" : "시세 수신 시도 중…";
+      foot.textContent = priceableCount===0 ? "시세 조회 대상 종목 없음(티커 미입력)" : "시세 수신 시도 중…";
     }
 
-    // 티커 테이프 갱신
     const tape = document.getElementById("tape");
-    const items = HOLDINGS.map(h=>{
-      const s = state[h.ticker];
+    const items = HOLDINGS.map((h, idx)=>{
+      const s = state[idx] || {};
+      if(!h.ticker) return `<span><span class="tk">${(h.en||h.ko||"?").slice(0,12)}</span><span class="flat">시세없음</span></span>`;
       const cls = pctClass(s.pct);
       const txt = s.status==='ok' ? fmtPct(s.pct) : (s.status==='fail'?'—':'…');
       return `<span><span class="tk">${h.ticker}</span><span class="${cls}">${txt}</span></span>`;
     }).join("");
-    tape.innerHTML = items + items; // 무한 스크롤을 위해 두 번 반복
+    tape.innerHTML = items + items;
 
     document.getElementById("marketStatus").textContent = marketStatusText();
   }
 
   async function refreshAll(){
     document.getElementById("lastUpdated").textContent = "수신 중…";
-    HOLDINGS.forEach(h=>{ if(!state[h.ticker].manual){ state[h.ticker].status='pending'; } });
+    HOLDINGS.forEach((h, idx)=>{
+      if(!state[idx]) state[idx] = {status:'pending'};
+      if(h.ticker && !state[idx].manual) state[idx].status='pending';
+    });
     renderTable();
 
-    const results = await Promise.allSettled(HOLDINGS.map(h=>fetchOne(h.ticker)));
+    const targets = HOLDINGS.map((h, idx)=>({h, idx})).filter(t=>t.h.ticker && !(state[t.idx]&&state[t.idx].manual));
+    const results = await Promise.allSettled(targets.map(t=>fetchOne(t.h.ticker)));
     results.forEach((r, i)=>{
-      const h = HOLDINGS[i];
-      if(state[h.ticker].manual) return; // 수동 입력값은 자동 갱신으로 덮지 않음
+      const idx = targets[i].idx;
       if(r.status==='fulfilled' && r.value.status==='ok'){
-        state[h.ticker] = {...r.value};
+        state[idx] = {...r.value, _ticker:HOLDINGS[idx].ticker};
       } else {
-        state[h.ticker] = {status:'fail', price:state[h.ticker].price, pct:null};
+        state[idx] = {status:'fail', price:state[idx]?.price??null, pct:null, _ticker:HOLDINGS[idx].ticker};
       }
     });
 
     renderTable();
     updateSummary();
-    const now = new Date();
-    document.getElementById("lastUpdated").textContent = "마지막 수신 시도: "+now.toLocaleTimeString("ko-KR");
+    document.getElementById("lastUpdated").textContent = "마지막 시세 수신: "+new Date().toLocaleTimeString("ko-KR");
   }
 
   function updateKeyStatus(){
@@ -424,6 +621,62 @@
     const el = document.getElementById("keyStatus");
     el.textContent = key ? `키 저장됨(마지막 4자리 …${key.slice(-4)})` : "저장된 키 없음 — Finnhub 미사용, Stooq/Yahoo만 시도(둘 다 차단 확인됨)";
   }
+
+  function renderEditor(){
+    const rowsEl = document.getElementById("editorRows");
+    rowsEl.innerHTML = "";
+    HOLDINGS.forEach((h, idx)=>{
+      const row = document.createElement("div");
+      const needsTicker = !h.ticker;
+      row.className = "edit-row" + (needsTicker ? " e-warn" : "");
+      const nameVal = String(h.ko || h.en || "").replace(/"/g,"&quot;");
+      row.innerHTML = `
+        <input type="text" class="e-ko" value="${nameVal}" placeholder="종목명">
+        <input type="text" class="e-ticker" value="${h.ticker||""}" placeholder="${needsTicker?'티커 필요':'티커'}">
+        <input type="number" step="0.01" class="e-weight" value="${h.weight}" placeholder="비중%">
+        <button class="e-del" type="button" title="이 종목 삭제">×</button>
+      `;
+      row.querySelector(".e-del").addEventListener("click", ()=>{
+        collectFromInputs();
+        HOLDINGS.splice(idx,1);
+        renderEditor();
+      });
+      rowsEl.appendChild(row);
+    });
+    const unresolved = HOLDINGS.filter(h=>!h.ticker).length;
+    document.getElementById("weightSumLabel").textContent =
+      `비중 합계 ${weightSum().toFixed(2)}%p` + (unresolved ? ` · 티커 미입력 ${unresolved}건(주황 테두리)` : "");
+  }
+
+  function collectFromInputs(){
+    const rows = document.querySelectorAll("#editorRows .edit-row");
+    const collected = [];
+    rows.forEach(row=>{
+      const nameRaw = row.querySelector(".e-ko").value.trim();
+      const ticker = row.querySelector(".e-ticker").value.trim().toUpperCase();
+      const weight = parseFloat(row.querySelector(".e-weight").value);
+      collected.push({ ko:nameRaw, en:"", ticker, weight: isFinite(weight)?weight:0 });
+    });
+    HOLDINGS = collected;
+  }
+
+  function updateBasisMeta(){
+    document.getElementById("basisMetaDate").textContent = BASIS_DATE;
+    document.getElementById("basisDateInput").value = BASIS_DATE;
+
+    const banner = document.getElementById("staleBanner");
+    const basisTime = new Date(BASIS_DATE+"T00:00:00").getTime();
+    const daysOld = isFinite(basisTime) ? Math.floor((Date.now()-basisTime)/86400000) : null;
+    if(daysOld!==null && daysOld>=3){
+      banner.style.display = "block";
+      banner.className = "banner err";
+      banner.innerHTML = `<b>구성종목이 ${daysOld}일째 갱신되지 않았습니다.</b> 자동 갱신이 계속 실패하고 있을 수 있습니다 — 아래 "지금 자동 갱신"을 눌러보거나, 공식 페이지를 직접 확인해 주세요.`;
+    } else {
+      banner.style.display = "none";
+    }
+  }
+
+  // ================= 이벤트 바인딩 =================
 
   document.getElementById("btnSaveKey").addEventListener("click", ()=>{
     const v = document.getElementById("finnhubKeyInput").value.trim();
@@ -442,9 +695,62 @@
     else if(timer){ clearInterval(timer); timer=null; }
   });
 
+  document.getElementById("btnAutoUpdate").addEventListener("click", ()=>{
+    autoUpdateComposition().then(()=>refreshAll());
+  });
+
+  document.getElementById("btnAddRow").addEventListener("click", ()=>{
+    collectFromInputs();
+    HOLDINGS.push({ko:"", en:"", ticker:"", weight:0});
+    renderEditor();
+  });
+
+  document.getElementById("btnSortWeight").addEventListener("click", ()=>{
+    collectFromInputs();
+    HOLDINGS.sort((a,b)=>Number(b.weight)-Number(a.weight));
+    renderEditor();
+  });
+
+  document.getElementById("btnSaveHoldings").addEventListener("click", ()=>{
+    collectFromInputs();
+    const bad = HOLDINGS.find(h=>!h.ko);
+    if(bad){ alert("종목명이 비어 있는 행이 있습니다. 채우거나 × 로 삭제해 주세요."); return; }
+    const tickers = HOLDINGS.map(h=>h.ticker).filter(Boolean);
+    const dup = tickers.filter((t,i,arr)=>arr.indexOf(t)!==i);
+    if(dup.length){ alert("같은 티커가 중복 입력됐습니다: "+[...new Set(dup)].join(", ")); return; }
+    const basisInput = document.getElementById("basisDateInput").value;
+    if(basisInput) BASIS_DATE = basisInput;
+    localStorage.setItem(LS_HOLDINGS_KEY, JSON.stringify(HOLDINGS));
+    localStorage.setItem(LS_BASIS_KEY, BASIS_DATE);
+    rebuildState();
+    renderEditor();
+    updateBasisMeta();
+    renderTable();
+    updateSummary();
+    refreshAll();
+  });
+
+  document.getElementById("btnResetHoldings").addEventListener("click", ()=>{
+    if(!confirm("기본값(2026.08.03 공시 TOP10)으로 되돌릴까요? 편집한 내용은 사라집니다.")) return;
+    localStorage.removeItem(LS_HOLDINGS_KEY);
+    localStorage.removeItem(LS_BASIS_KEY);
+    HOLDINGS = loadHoldings();
+    BASIS_DATE = loadBasisDate();
+    rebuildState();
+    renderEditor();
+    updateBasisMeta();
+    renderTable();
+    updateSummary();
+    refreshAll();
+  });
+
+  // ================= 초기 구동 =================
+  renderEditor();
+  updateBasisMeta();
   renderTable();
   updateSummary();
-  refreshAll();
+
+  autoUpdateComposition().then(()=>refreshAll());
 })();
 </script>
 
