@@ -1,12 +1,12 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-08-19T16:23:41.911201+09:00",
-  "run_slot": "A",
+  "updated_at": "2026-08-20T06:55:56.201673+09:00",
+  "run_slot": "B",
   "data_freshness": {
-    "data_json_updated_at": "2026-08-19T16:23:25.110825+09:00",
+    "data_json_updated_at": "2026-08-20T06:54:39.407979+09:00",
     "kospi200_last_date": "2026-08-19",
-    "sp500_last_date": "2026-08-18",
-    "hy_oas_last_date": "2026-08-17",
+    "sp500_last_date": "2026-08-19",
+    "hy_oas_last_date": "2026-08-18",
     "stale": false,
     "intraday_risk": false
   },
@@ -45,7 +45,7 @@
       "level": 738.61,
       "dd_pct": -50.0
     },
-    "dist_to_next_pp": 18.53,
+    "dist_to_next_pp": 18.55,
     "buy_gate_open": true
   },
   "inflation": {
@@ -61,7 +61,7 @@
   },
   "gate": {
     "status": "open",
-    "usdkrw": 1399.08,
+    "usdkrw": 1387.0699,
     "usdkrw_leg": false,
     "cds_leg": false,
     "cds_check_required": false,
@@ -82,10 +82,10 @@
   "last_seen": {
     "kospi200": {
       "date": "2026-08-19",
-      "close": 1012.3,
+      "close": 1012.61,
       "intraday_risk": false,
-      "observed_at": "2026-08-19T16:23:41.911201+09:00",
-      "run_slot": "A"
+      "observed_at": "2026-08-20T06:55:56.201673+09:00",
+      "run_slot": "B"
     }
   },
   "alerts_fired": {
@@ -102,14 +102,14 @@
     "MODE_DRIFT": null,
     "INFL_COUNT_CHANGE": null,
     "HEARTBEAT": null,
-    "CLOSE_REVISED": null,
+    "CLOSE_REVISED": "2026-08-20",
     "MUNGER_EXECUTED": null
   },
   "pending_ack": [
     {
-      "code": "CLOSE_REVISED:2026-08-14",
-      "raised_at": "2026-08-15",
-      "detail": "KOSPI200 2026-08-14 종가 정정 감지"
+      "code": "CLOSE_REVISED:2026-08-19",
+      "raised_at": "2026-08-20",
+      "detail": "KOSPI200 2026-08-19 종가 정정 감지"
     }
   ]
 }
