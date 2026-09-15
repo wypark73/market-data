@@ -1,12 +1,12 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-09-15T21:05:29.851220+09:00",
-  "run_slot": "A",
+  "updated_at": "2026-09-16T08:39:21.564088+09:00",
+  "run_slot": "B",
   "data_freshness": {
-    "data_json_updated_at": "2026-09-15T21:03:56.868192+09:00",
+    "data_json_updated_at": "2026-09-16T08:39:07.190814+09:00",
     "kospi200_last_date": "2026-09-15",
-    "sp500_last_date": "2026-09-14",
-    "hy_oas_last_date": "2026-09-11",
+    "sp500_last_date": "2026-09-15",
+    "hy_oas_last_date": "2026-09-14",
     "stale": false,
     "intraday_risk": false,
     "kospi200_source": "fdr",
@@ -65,7 +65,7 @@
   },
   "gate": {
     "status": "open",
-    "usdkrw": 1358.0601,
+    "usdkrw": 1363.58,
     "usdkrw_leg": false,
     "cds_leg": false,
     "cds_check_required": false,
@@ -88,8 +88,8 @@
       "date": "2026-09-15",
       "close": 1042.46,
       "intraday_risk": false,
-      "observed_at": "2026-09-15T21:05:29.851220+09:00",
-      "run_slot": "A"
+      "observed_at": "2026-09-16T08:39:21.564088+09:00",
+      "run_slot": "B"
     }
   },
   "alerts_fired": {
@@ -109,11 +109,5 @@
     "CLOSE_REVISED": null,
     "MUNGER_EXECUTED": null
   },
-  "pending_ack": [
-    {
-      "code": "DATA_STALE",
-      "raised_at": "2026-09-08",
-      "detail": "데이터 신선도 이상"
-    }
-  ]
+  "pending_ack": []
 }
