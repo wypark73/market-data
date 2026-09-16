@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-09-16T08:39:21.564088+09:00",
-  "run_slot": "B",
+  "updated_at": "2026-09-16T21:00:00.537582+09:00",
+  "run_slot": "A",
   "data_freshness": {
-    "data_json_updated_at": "2026-09-16T08:39:07.190814+09:00",
-    "kospi200_last_date": "2026-09-15",
+    "data_json_updated_at": "2026-09-16T20:59:42.117709+09:00",
+    "kospi200_last_date": "2026-09-16",
     "sp500_last_date": "2026-09-15",
     "hy_oas_last_date": "2026-09-14",
     "stale": false,
@@ -49,7 +49,7 @@
       "level": 738.61,
       "dd_pct": -50.0
     },
-    "dist_to_next_pp": 20.57,
+    "dist_to_next_pp": 21.76,
     "buy_gate_open": true
   },
   "inflation": {
@@ -65,7 +65,7 @@
   },
   "gate": {
     "status": "open",
-    "usdkrw": 1363.58,
+    "usdkrw": 1367.47,
     "usdkrw_leg": false,
     "cds_leg": false,
     "cds_check_required": false,
@@ -85,11 +85,11 @@
   },
   "last_seen": {
     "kospi200": {
-      "date": "2026-09-15",
-      "close": 1042.46,
+      "date": "2026-09-16",
+      "close": 1060.05,
       "intraday_risk": false,
-      "observed_at": "2026-09-16T08:39:21.564088+09:00",
-      "run_slot": "B"
+      "observed_at": "2026-09-16T21:00:00.537582+09:00",
+      "run_slot": "A"
     }
   },
   "alerts_fired": {
