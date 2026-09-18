@@ -1,12 +1,12 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-09-18T20:47:07.425168+09:00",
-  "run_slot": "A",
+  "updated_at": "2026-09-19T08:33:10.024632+09:00",
+  "run_slot": "B",
   "data_freshness": {
-    "data_json_updated_at": "2026-09-18T20:45:52.279428+09:00",
+    "data_json_updated_at": "2026-09-19T08:32:54.940835+09:00",
     "kospi200_last_date": "2026-09-17",
-    "sp500_last_date": "2026-09-17",
-    "hy_oas_last_date": "2026-09-16",
+    "sp500_last_date": "2026-09-18",
+    "hy_oas_last_date": "2026-09-17",
     "stale": true,
     "intraday_risk": false,
     "kospi200_source": "unavailable",
@@ -65,7 +65,7 @@
   },
   "gate": {
     "status": "open",
-    "usdkrw": 1387.55,
+    "usdkrw": 1385.95,
     "usdkrw_leg": false,
     "cds_leg": false,
     "cds_check_required": false,
@@ -88,8 +88,8 @@
       "date": "2026-09-17",
       "close": 1059.45,
       "intraday_risk": false,
-      "observed_at": "2026-09-18T20:47:07.425168+09:00",
-      "run_slot": "A"
+      "observed_at": "2026-09-19T08:33:10.024632+09:00",
+      "run_slot": "B"
     }
   },
   "alerts_fired": {
@@ -97,7 +97,7 @@
     "MUNGER_NEAR": null,
     "GATE_CDS_CHECK": null,
     "CPI_SERIES_MISMATCH": null,
-    "DATA_STALE": "2026-09-18",
+    "DATA_STALE": "2026-09-19",
     "WINDOW_D30": null,
     "USDKRW_WARN": null,
     "HY_OAS_WARN": null,
