@@ -1,16 +1,16 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-09-19T20:29:27.417154+09:00",
+  "updated_at": "2026-09-21T22:18:12.025413+09:00",
   "run_slot": "A",
   "data_freshness": {
-    "data_json_updated_at": "2026-09-19T20:29:10.369990+09:00",
+    "data_json_updated_at": "2026-09-21T22:17:49.910013+09:00",
     "kospi200_last_date": "2026-09-17",
     "sp500_last_date": "2026-09-18",
     "hy_oas_last_date": "2026-09-17",
     "stale": true,
     "intraday_risk": false,
     "kospi200_source": "unavailable",
-    "kospi200_lag_trading_days": 1,
+    "kospi200_lag_trading_days": 2,
     "kospi200_derived_stale": false,
     "kospi200_fallback_snapshot": null
   },
@@ -65,7 +65,7 @@
   },
   "gate": {
     "status": "open",
-    "usdkrw": 1385.0,
+    "usdkrw": 1372.34,
     "usdkrw_leg": false,
     "cds_leg": false,
     "cds_check_required": false,
@@ -88,7 +88,7 @@
       "date": "2026-09-17",
       "close": 1059.45,
       "intraday_risk": false,
-      "observed_at": "2026-09-19T20:29:27.417154+09:00",
+      "observed_at": "2026-09-21T22:18:12.025413+09:00",
       "run_slot": "A"
     }
   },
@@ -97,7 +97,7 @@
     "MUNGER_NEAR": null,
     "GATE_CDS_CHECK": null,
     "CPI_SERIES_MISMATCH": null,
-    "DATA_STALE": "2026-09-19",
+    "DATA_STALE": "2026-09-21",
     "WINDOW_D30": null,
     "USDKRW_WARN": null,
     "HY_OAS_WARN": null,
@@ -105,9 +105,15 @@
     "ATH_STALE": null,
     "MODE_DRIFT": null,
     "INFL_COUNT_CHANGE": null,
-    "HEARTBEAT": null,
+    "HEARTBEAT": "2026-09-21",
     "CLOSE_REVISED": null,
     "MUNGER_EXECUTED": null
   },
-  "pending_ack": []
+  "pending_ack": [
+    {
+      "code": "DATA_STALE",
+      "raised_at": "2026-09-21",
+      "detail": "데이터 신선도 이상"
+    }
+  ]
 }

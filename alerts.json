@@ -3,8 +3,16 @@
     "code": "DATA_STALE",
     "level": "ACT",
     "title": "데이터 신선도 이상",
-    "body": "kospi200 2026-09-17 (직전 거래일 2026-09-18 종가 없음, 1거래일 지연)",
+    "body": "kospi200 2026-09-17 (직전 거래일 2026-09-21 종가 없음, 2거래일 지연, KRX OpenAPI 교차검증도 실패)",
     "ack_key": "DATA_STALE",
     "edge": false
+  },
+  {
+    "code": "HEARTBEAT",
+    "level": "INFO",
+    "title": "정상 가동 중",
+    "body": "KOSPI200 데이터 지연 — 판정 보류 (FDR 마지막 2026-09-17) / 모드 중도 / Munger 2단계 / 인플레 0/2 / 게이트 open",
+    "ack_key": null,
+    "edge": true
   }
 ]
