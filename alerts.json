@@ -1,10 +1,18 @@
 [
   {
-    "code": "DATA_STALE",
-    "level": "ACT",
-    "title": "데이터 신선도 이상",
-    "body": "kospi200 2026-09-17 (직전 거래일 2026-09-22 종가 없음, 3거래일 지연, KRX OpenAPI 교차검증도 실패)",
-    "ack_key": "DATA_STALE",
+    "code": "KOSPI200_SOURCE_FALLBACK",
+    "level": "WARN",
+    "title": "KOSPI200 소스 전환: FDR → KRX OpenAPI (3거래일 지연)",
+    "body": "FDR(prices.kospi200) 2026-09-17 에서 정체(3거래일). KRX OpenAPI 교차검증 소스가 2026-09-22 종가 1,113.30를 보고해 이 값으로 Munger 판정을 재개합니다. close_5d_avg·ma50 등 FDR 시계열 기반 파생값은 여전히 FDR 마지막 갱신 시점 기준이라 최신이 아닙니다(KOSPI200_DERIVED_STALE 참고).",
+    "ack_key": null,
+    "edge": true
+  },
+  {
+    "code": "KOSPI200_DERIVED_STALE",
+    "level": "WARN",
+    "title": "KOSPI200 파생 지표(5일평균 등) 미갱신 — 폴백 중",
+    "body": "close_5d_avg·dd_5d_avg_pct·ma50 은 FDR 시계열에서 계산되며 FDR이 정체된 동안 새로 계산되지 않습니다. 승격 게이트·정기 윈도우 환원 판정에 쓰이는 5일평균 DD 는 이 기간 동안 오래된 값입니다.",
+    "ack_key": null,
     "edge": false
   }
 ]
