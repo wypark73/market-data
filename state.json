@@ -1,18 +1,21 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-09-23T21:05:02.738789+09:00",
-  "run_slot": "A",
+  "updated_at": "2026-09-24T08:55:21.481763+09:00",
+  "run_slot": "B",
   "data_freshness": {
-    "data_json_updated_at": "2026-09-23T21:04:30.390244+09:00",
+    "data_json_updated_at": "2026-09-24T08:55:03.780431+09:00",
     "kospi200_last_date": "2026-09-17",
-    "sp500_last_date": "2026-09-21",
-    "hy_oas_last_date": "2026-09-21",
-    "stale": true,
+    "sp500_last_date": "2026-09-23",
+    "hy_oas_last_date": "2026-09-22",
+    "stale": false,
     "intraday_risk": false,
-    "kospi200_source": "unavailable",
+    "kospi200_source": "krx_openapi",
     "kospi200_lag_trading_days": 4,
-    "kospi200_derived_stale": false,
-    "kospi200_fallback_snapshot": null
+    "kospi200_derived_stale": true,
+    "kospi200_fallback_snapshot": {
+      "date": "2026-09-23",
+      "close": 1126.12
+    }
   },
   "mode": {
     "current": "중도",
@@ -49,7 +52,7 @@
       "level": 738.61,
       "dd_pct": -50.0
     },
-    "dist_to_next_pp": 21.72,
+    "dist_to_next_pp": 26.23,
     "buy_gate_open": true
   },
   "inflation": {
@@ -65,7 +68,7 @@
   },
   "gate": {
     "status": "open",
-    "usdkrw": 1364.98,
+    "usdkrw": 1365.1801,
     "usdkrw_leg": false,
     "cds_leg": false,
     "cds_check_required": false,
@@ -88,8 +91,8 @@
       "date": "2026-09-17",
       "close": 1059.45,
       "intraday_risk": false,
-      "observed_at": "2026-09-23T21:05:02.738789+09:00",
-      "run_slot": "A"
+      "observed_at": "2026-09-24T08:55:21.481763+09:00",
+      "run_slot": "B"
     }
   },
   "alerts_fired": {
@@ -97,7 +100,7 @@
     "MUNGER_NEAR": null,
     "GATE_CDS_CHECK": null,
     "CPI_SERIES_MISMATCH": null,
-    "DATA_STALE": "2026-09-23",
+    "DATA_STALE": null,
     "WINDOW_D30": null,
     "USDKRW_WARN": null,
     "HY_OAS_WARN": null,
@@ -108,8 +111,8 @@
     "HEARTBEAT": null,
     "CLOSE_REVISED": null,
     "MUNGER_EXECUTED": null,
-    "KOSPI200_DERIVED_STALE": null,
-    "KOSPI200_SOURCE_FALLBACK": null
+    "KOSPI200_DERIVED_STALE": "2026-09-24",
+    "KOSPI200_SOURCE_FALLBACK": "2026-09-24"
   },
   "pending_ack": [
     {
